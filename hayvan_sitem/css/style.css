@@ -1,0 +1,111 @@
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f8f9fa;
+  margin: 0;
+  padding: 0;
+}
+
+h2 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 40px;
+}
+
+.card {
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  background: #fff;
+  max-width: 400px; /* Kapsayıcı genişliği */
+  margin: 20px auto; /* Ortala ve üst-alt boşluk */
+  overflow: hidden;
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: scale(1.02);
+}
+
+/* Fotoğraf stili */
+.card-img-top, .card img {
+  width: 100%;
+  height: auto;         /* Yükseklik otomatik */
+  max-height: 300px;    /* Maksimum yükseklik */
+  object-fit: contain;  /* Resmin tamamını göster */
+  border-radius: 8px 8px 0 0;
+  background-color: #f0f0f0; /* Boş alan için arka plan */
+}
+
+.btn-success {
+  background: linear-gradient(90deg, #28a745 60%, #218838 100%);
+  border: none;
+}
+
+footer {
+  padding: 20px;
+  background-color: #eee;
+  font-size: 14px;
+  color: #555;
+}
+/* --- İLAN FOTOĞRAFI GÖRÜNTÜLEME STİLİ --- */
+.card-img-top, .card img {
+  width: 100%;
+  height: auto;
+  max-height: 300px;
+  object-fit: contain;
+  border-radius: 8px 8px 0 0;
+  background-color: #f0f0f0;
+}
+
+/* Yönetim paneli tablolarındaki resimler için */
+.table-responsive img {
+    max-width: 80px; /* Maksimum genişlik */
+    height: auto; /* Oranı koru */
+    display: block; /* Margin için */
+    margin: 0 auto; /* Ortala */
+}
+
+/* Modal veya detay sayfasında büyük resimler için */
+.modal-body img,
+.ilan-detay-resim {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+.swal2-popup {
+    border-radius: 0.5rem; /* Example: Rounded corners */
+    padding: 1rem;
+    /* You can set a fixed width if desired: */
+    /* width: 300px; */
+    background-color: #fff; /* Example: White background */
+    color: #333; /* Example: Dark text color */
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1); /* Example: Subtle shadow */
+}
+
+.swal2-title {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: #007bff; /* Example: Primary color for title */
+}
+
+.swal2-content {
+    font-size: 1rem;
+    color: #555;
+}
+
+.swal2-confirm {
+    background-color: #007bff; /* Example: Primary button color */
+    color: #fff;
+    border: none;
+    border-radius: 0.3rem;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-top: 1rem;
+}
+
+.swal2-confirm:hover {
+    background-color: #0056b3; /* Example: Darker shade on hover */
+}
