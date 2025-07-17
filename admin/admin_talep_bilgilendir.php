@@ -97,27 +97,23 @@ if ($talep_id === 0) {
                         };
                         
                         echo '<div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">';
-                        echo '<div class="flex items-center space-x-4 mb-4">';
-                        echo '<img src="../uploads/' . htmlspecialchars($talep['foto']) . '" alt="' . htmlspecialchars($talep['baslik']) . '" class="w-10 h-10 object-cover rounded-md">';
-                        echo '<div class="flex-1">';
-                        echo '<h3 class="font-semibold text-gray-900">' . htmlspecialchars($talep['baslik']) . '</h3>';
-                        echo '<p class="text-sm text-gray-600">' . htmlspecialchars($talep['kullanici_ad']) . '</p>';
+                        echo '<div class="flex items-start space-x-4 mb-4">';
+                        echo '<img src="../uploads/' . htmlspecialchars($talep['foto']) . '" alt="' . htmlspecialchars($talep['baslik']) . '" class="w-16 h-16 object-cover rounded-lg flex-shrink-0">';
+                        echo '<div class="flex-1 min-w-0">';
+                        echo '<h3 class="font-semibold text-gray-900 truncate">' . htmlspecialchars($talep['baslik']) . '</h3>';
+                        echo '<p class="text-sm text-gray-600 mt-1">' . htmlspecialchars($talep['kullanici_ad']) . '</p>';
+                        echo '<p class="text-xs text-gray-500 mt-1">Talep Tarihi: ' . date('d.m.Y H:i', strtotime($talep['talep_tarihi'])) . '</p>';
                         echo '</div>';
                         echo '</div>';
                         
-                        echo '<div class="mb-4">';
+                        echo '<div class="flex items-center justify-between mb-4">';
                         echo '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ' . $durum_rengi . '">';
                         echo ucfirst($talep['durum']);
                         echo '</span>';
-                        echo '</div>';
-                        
-                        echo '<div class="text-sm text-gray-500 mb-4">';
-                        echo 'Talep Tarihi: ' . date('d.m.Y H:i', strtotime($talep['talep_tarihi']));
-                        echo '</div>';
-                        
-                        echo '<a href="admin_talep_bilgilendir.php?id=' . $talep['id'] . '" class="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">';
-                        echo '<i class="fas fa-paper-plane mr-2"></i>Bilgilendir';
+                        echo '<a href="admin_talep_bilgilendir.php?id=' . $talep['id'] . '" class="inline-flex items-center px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm">';
+                        echo '<i class="fas fa-paper-plane mr-1"></i>Bilgilendir';
                         echo '</a>';
+                        echo '</div>';
                         echo '</div>';
                     }
                     echo '</div>';
@@ -193,11 +189,15 @@ include("includes/admin_header.php");
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <img src="../uploads/<?= htmlspecialchars($talep['foto']) ?>" 
-                         alt="<?= htmlspecialchars($talep['baslik']) ?>" 
-                         class="w-full max-w-sm h-48 object-cover rounded-lg mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800"><?= htmlspecialchars($talep['baslik']) ?></h3>
-                    <p class="text-gray-600 text-sm mt-2"><?= htmlspecialchars(substr($talep['aciklama'], 0, 150)) ?>...</p>
+                    <div class="flex items-start space-x-4">
+                        <img src="../uploads/<?= htmlspecialchars($talep['foto']) ?>" 
+                             alt="<?= htmlspecialchars($talep['baslik']) ?>" 
+                             class="w-24 h-24 object-cover rounded-lg flex-shrink-0">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2"><?= htmlspecialchars($talep['baslik']) ?></h3>
+                            <p class="text-gray-600 text-sm leading-relaxed"><?= htmlspecialchars(substr($talep['aciklama'], 0, 150)) ?>...</p>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="space-y-4">
@@ -218,7 +218,7 @@ include("includes/admin_header.php");
                     
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Talep Tarihi</label>
-                        <p class="text-gray-800"><?= date('d.m.Y H:i', strtotime($talep['tarih'])) ?></p>
+                        <p class="text-gray-800"><?= date('d.m.Y H:i', strtotime($talep['talep_tarihi'])) ?></p>
                     </div>
                     
                     <div>
