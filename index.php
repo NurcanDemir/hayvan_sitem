@@ -485,7 +485,7 @@ $result_sahiplenenler = $conn->query($sql_sahiplenenler);
 
 <main class="container mx-auto mt-12 px-4 py-8"> 
     <section class="mb-12">
-        <h2 class="text-3xl font-extrabold text-koyu-pembe mb-8 text-center">
+        <h2 class="text-3xl font-extrabold text-pink-400 mb-8 text-center">
             <i class="fas fa-paw mr-3"></i>Aktif İlanlar <?= !empty($pet_keyword) || !empty($city_keyword) ? 'için Arama Sonuçları' : '' ?>
         </h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
@@ -495,11 +495,11 @@ $result_sahiplenenler = $conn->query($sql_sahiplenenler);
                          <?php 
                             // Kategoriye göre renk ataması (örnek)
                             if ($ilan['kategori_ad'] == 'Kedi') {
-                                echo 'border-koyu-pembe';
+                                echo 'border-pink-300';
                             } elseif ($ilan['kategori_ad'] == 'Köpek') {
-                                echo 'border-acik-yesil';
+                                echo 'border-green-300';
                             } else {
-                                echo 'border-gray-400'; // Varsayılan renk
+                                echo 'border-purple-300'; // Varsayılan renk
                             }
                          ?>">
                         <img src="uploads/<?= htmlspecialchars($ilan['foto'] ?: 'placeholder.jpg') ?>" 
@@ -545,13 +545,13 @@ $result_sahiplenenler = $conn->query($sql_sahiplenenler);
     </section>
 
     <section class="mb-12">
-        <h2 class="text-3xl font-extrabold text-koyu-yesil mb-8 text-center">
+        <h2 class="text-3xl font-extrabold text-green-400 mb-8 text-center">
             <i class="fas fa-heart mr-3"></i>Mutlu Yuvalar: Sahiplenenler
         </h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             <?php if ($result_sahiplenenler && $result_sahiplenenler->num_rows > 0): ?>
                 <?php while ($ilan = $result_sahiplenenler->fetch_assoc()): ?>
-                    <div class="bg-white rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition duration-300 border-t-4 border-toz-pembe">
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition duration-300 border-t-4 border-pink-300">
                         <div class="relative">
                             <img src="uploads/<?= htmlspecialchars($ilan['foto'] ?: 'placeholder.jpg') ?>" 
                                  alt="<?= htmlspecialchars($ilan['baslik']) ?>" 
@@ -613,7 +613,7 @@ $result_sahiplenenler = $conn->query($sql_sahiplenenler);
                                 </div>
                             <?php endif; ?>
                             
-                            <a href="ilan_detay.php?id=<?= $ilan['id'] ?>" class="text-koyu-pembe hover:underline font-semibold flex items-center">
+                            <a href="ilan_detay.php?id=<?= $ilan['id'] ?>" class="text-pink-400 hover:text-pink-500 hover:underline font-semibold flex items-center">
                                 Detayları Gör <i class="fas fa-arrow-right ml-2 text-sm"></i>
                             </a>
                         </div>
@@ -639,7 +639,7 @@ $result_sahiplenenler = $conn->query($sql_sahiplenenler);
     <div class="container mx-auto px-4 flex-grow pt-20"> 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 items-start"> 
             <div class="bg-white rounded-xl shadow-xl p-8 flex flex-col h-full"> 
-                <h2 class="text-3xl font-extrabold mb-6 text-koyu-pembe text-center"> 
+                <h2 class="text-3xl font-extrabold mb-6 text-pink-400 text-center"> 
                     <i class="fas fa-paw mr-3"></i>Hayvan Sahiplendirme: Bir Dostluğa Adım Atın
                 </h2>
                 <p class="text-gray-700 leading-relaxed text-lg mb-6"> 
@@ -647,32 +647,32 @@ $result_sahiplenenler = $conn->query($sql_sahiplenenler);
                 </p>
                 <hr class="my-6 border-t border-gray-300"> 
                 <div class="text-left flex-grow"> 
-                    <h4 class="text-xl font-bold mb-4 text-koyu-yesil"> 
+                    <h4 class="text-xl font-bold mb-4 text-green-400"> 
                         <i class="fas fa-hand-holding-heart mr-3"></i>Neden Sahiplenmelisiniz?
                     </h4>
                     <ul class="list-none p-0 mb-6 space-y-3"> 
                         <li class="flex items-start text-gray-700 text-lg"> 
-                            <i class="fas fa-check-circle text-acik-yesil mr-3 mt-1"></i> 
+                            <i class="fas fa-check-circle text-green-400 mr-3 mt-1"></i> 
                             <span class="flex-1">**Bir Hayatı Kurtarırsınız:** Barınaklarda ve sokaklarda zor durumda olan hayvanlara ikinci bir şans vererek onların yaşam kalitesini artırırsınız.</span>
                         </li>
                         <li class="flex items-start text-gray-700 text-lg">
-                            <i class="fas fa-check-circle text-acik-yesil mr-3 mt-1"></i>
+                            <i class="fas fa-check-circle text-green-400 mr-3 mt-1"></i>
                             <span class="flex-1">**Sürdürülebilir Yaklaşımı Desteklersiniz:** Hayvan istismarına, yasa dışı üretime ve pet shop ticaretine karşı durarak daha etik bir dünya için adım atmış olursunuz.</span>
                         </li>
                         <li class="flex items-start text-gray-700 text-lg">
-                            <i class="fas fa-check-circle text-acik-yesil mr-3 mt-1"></i>
+                            <i class="fas fa-check-circle text-green-400 mr-3 mt-1"></i>
                             <span class="flex-1">**Koşulsuz Sevgi Kazanırsınız:** Bir hayvanın size vereceği sevgi saf, karşılıksız ve eşsizdir. Onlar, en zor zamanlarınızda bile yanınızda olan gerçek dostlardır.</span>
                         </li>
                         <li class="flex items-start text-gray-700 text-lg">
-                            <i class="fas fa-check-circle text-acik-yesil mr-3 mt-1"></i>
+                            <i class="fas fa-check-circle text-green-400 mr-3 mt-1"></i>
                             <span class="flex-1">**Topluma Katkı Sağlarsınız:** Sahiplenme bilincini yayarak diğer insanlara da ilham verir ve hayvan refahı konusunda duyarlı bir toplumun gelişimine katkıda bulunursunuz.</span>
                         </li>
                         <li class="flex items-start text-gray-700 text-lg">
-                            <i class="fas fa-check-circle text-acik-yesil mr-3 mt-1"></i>
+                            <i class="fas fa-check-circle text-green-400 mr-3 mt-1"></i>
                             <span class="flex-1">**Maddi Tasarruf Edersiniz:** Genellikle bir pet shoptan satın almaya kıyasla daha uygun maliyetli olabilir ve kısırlaştırma gibi bazı temel sağlık hizmetleri tamamlanmış olabilir.</span>
                         </li>
                     </ul>
-                    <h4 class="text-xl font-bold mb-4 mt-6 text-koyu-yesil">
+                    <h4 class="text-xl font-bold mb-4 mt-6 text-green-400">
                         <i class="fas fa-book mr-3"></i>Sahiplenme Süreci ve Bilinmesi Gerekenler
                     </h4>
                     <p class="text-gray-700 leading-relaxed text-lg mb-6">
@@ -681,7 +681,7 @@ $result_sahiplenenler = $conn->query($sql_sahiplenenler);
                     <p class="text-gray-700 leading-relaxed text-lg mb-6">
                         Evcil hayvanınızın barınma, yaşına ve türüne uygun kaliteli beslenme, düzenli veteriner sağlık kontrolleri (yıllık aşılar, parazit tedavileri), eğitim ve sosyalleşme gibi temel ihtiyaçlarını karşılamayı taahhüt etmelisiniz. Unutmayın, hayvanlar duygusal varlıklardır ve sahiplendikten sonra terk edilmek onlar için büyük bir travmadır. Bu nedenle, hayatınızdaki potansiyel değişiklikleri (taşınma, iş değişikliği, aile büyüklüğü vb.) göz önünde bulundurarak uzun vadeli bir plan yapmanız önemlidir. Özellikle evden uzun süre ayrı kalacak kişiler, hayvanlarını emanet edebilecekleri güvenli yerler veya kişiler hakkında önceden planlama yapmalıdır.
                     </p>
-                    <h4 class="text-xl font-bold mb-4 mt-6 text-koyu-yesil">
+                    <h4 class="text-xl font-bold mb-4 mt-6 text-green-400">
                         <i class="fas fa-heartbeat mr-3"></i>Sağlık ve Bakım
                     </h4>
                     <p class="text-gray-700 leading-relaxed text-lg mb-6">
@@ -697,13 +697,13 @@ $result_sahiplenenler = $conn->query($sql_sahiplenenler);
             </div>
 
             <div class="bg-white rounded-xl shadow-xl p-8 flex flex-col h-full">
-                <h2 class="text-3xl font-extrabold mb-6 text-koyu-yesil text-center">
+                <h2 class="text-3xl font-extrabold mb-6 text-green-400 text-center">
                     <i class="fas fa-lightbulb mr-3"></i>Hayvan Dünyasından İlginç Bilgiler
                 </h2>
                 <div class="text-left flex-grow">
                     <ul class="list-none p-0 space-y-6">
                         <li class="mb-4">
-                            <h5 class="text-xl font-bold text-koyu-pembe mb-2">
+                            <h5 class="text-xl font-bold text-pink-400 mb-2">
                                 <i class="fas fa-info-circle mr-3"></i>Kediler ve Su
                             </h5>
                             <p class="text-gray-700 leading-relaxed text-lg">
@@ -711,7 +711,7 @@ $result_sahiplenenler = $conn->query($sql_sahiplenenler);
                             </p>
                         </li>
                         <li class="mb-4">
-                            <h5 class="text-xl font-bold text-koyu-pembe mb-2">
+                            <h5 class="text-xl font-bold text-pink-400 mb-2">
                                 <i class="fas fa-info-circle mr-3"></i>Köpeklerin Burun İzleri
                             </h5>
                             <p class="text-gray-700 leading-relaxed text-lg">
@@ -719,7 +719,7 @@ $result_sahiplenenler = $conn->query($sql_sahiplenenler);
                             </p>
                         </li>
                         <li class="mb-4">
-                            <h5 class="text-xl font-bold text-koyu-pembe mb-2">
+                            <h5 class="text-xl font-bold text-pink-400 mb-2">
                                 <i class="fas fa-info-circle mr-3"></i>Papağanların Konuşma Yeteneği
                             </h5>
                             <p class="text-gray-700 leading-relaxed text-lg">
@@ -727,7 +727,7 @@ $result_sahiplenenler = $conn->query($sql_sahiplenenler);
                             </p>
                         </li>
                         <li class="mb-4">
-                            <h5 class="text-xl font-bold text-koyu-pembe mb-2">
+                            <h5 class="text-xl font-bold text-pink-400 mb-2">
                                 <i class="fas fa-info-circle mr-3"></i>Balıkların Hafızası
                             </h5>
                             <p class="text-gray-700 leading-relaxed text-lg">
