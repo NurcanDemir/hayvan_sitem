@@ -152,6 +152,47 @@ $result_sahiplenenler = $conn->query($sql_sahiplenenler);
             background: #f1f1f1;
         }
         
+        /* Hero Section Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 0.1; }
+            50% { opacity: 0.3; }
+        }
+        
+        .hero-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .hero-pulse {
+            animation: pulse-soft 4s ease-in-out infinite;
+        }
+        
+        /* Gradient Text Animation */
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .gradient-text {
+            background: linear-gradient(-45deg, #B8D4F0, #E1BEE7, #C8E6C9, #F8BBD9);
+            background-size: 400% 400%;
+            animation: gradient-shift 4s ease infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Glass Effect */
+        .glass-effect {
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        
         /* Slide paneller için CSS (header'daki JS ile birlikte çalışır) */
         /* Bu stiller header.php içindeki JS ile entegre çalışır. */
         .slide-panel-left {
@@ -171,29 +212,274 @@ $result_sahiplenenler = $conn->query($sql_sahiplenenler);
 
 <?php include("includes/header.php"); ?>
 
-<div class="relative h-[500px] bg-cover bg-center text-white flex items-center justify-center text-center shadow-lg" 
-     style="background-image: url('images/hero-bg.jpg');">
-    <div class="absolute inset-0 bg-black bg-opacity-40"></div> <div class="z-10 max-w-3xl p-5 mx-auto">
-        <h1 class="text-5xl font-extrabold mb-4 drop-shadow-lg">YUVA ARAYANLAR</h1>
-        <p class="text-xl mb-8 drop-shadow-md">Onlara aşk, dost arkadaş, mutluluk. Siz de onların şansı olabilirsiniz.</p>
+<div class="relative h-[600px] bg-gradient-to-br from-blue-200 via-purple-200 to-green-200 text-gray-700 flex items-center justify-center text-center shadow-lg overflow-hidden">
+    <!-- Arkaplan SVG Desenler - Pastel Karikatür Hayvanlar -->
+    <div class="absolute inset-0 opacity-20 hero-pulse">
+        <svg width="100%" height="100%" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+            <!-- Mutlu Köpek (Sol üst) - Pastel Mavi -->
+            <g class="hero-float">
+                <g transform="translate(80, 80)">
+                    <!-- Vücut -->
+                    <ellipse cx="50" cy="80" rx="35" ry="25" fill="#B8D4F0" stroke="#8FB8E8" stroke-width="2"/>
+                    <!-- Kafa -->
+                    <circle cx="35" cy="50" r="25" fill="#D1E7F7" stroke="#8FB8E8" stroke-width="2"/>
+                    <!-- Kulaklar -->
+                    <ellipse cx="15" cy="35" rx="12" ry="20" fill="#A8CCE8" stroke="#7BA5D6" stroke-width="1.5"/>
+                    <ellipse cx="55" cy="35" rx="12" ry="20" fill="#A8CCE8" stroke="#7BA5D6" stroke-width="1.5"/>
+                    <!-- Gözler (sevimli) -->
+                    <circle cx="25" cy="45" r="6" fill="#FFFFFF" stroke="#8FB8E8" stroke-width="1"/>
+                    <circle cx="45" cy="45" r="6" fill="#FFFFFF" stroke="#8FB8E8" stroke-width="1"/>
+                    <circle cx="25" cy="45" r="3" fill="#5A8BC4"/>
+                    <circle cx="45" cy="45" r="3" fill="#5A8BC4"/>
+                    <circle cx="27" cy="43" r="1" fill="#FFFFFF"/>
+                    <circle cx="47" cy="43" r="1" fill="#FFFFFF"/>
+                    <!-- Burun -->
+                    <ellipse cx="35" cy="55" rx="4" ry="3" fill="#E8A5C4" stroke="#D480A8" stroke-width="1"/>
+                    <!-- Ağız (gülümseme) -->
+                    <path d="M25 65 Q35 72 45 65" stroke="#8FB8E8" stroke-width="2.5" fill="none"/>
+                    <!-- Dil -->
+                    <ellipse cx="35" cy="70" rx="6" ry="3" fill="#F4C2C2"/>
+                    <!-- Kuyruk (sallanıyor) -->
+                    <path d="M85 75 Q100 60 95 45 Q90 30 100 20" stroke="#8FB8E8" stroke-width="6" fill="none"/>
+                    <!-- Bacaklar -->
+                    <ellipse cx="25" cy="105" rx="8" ry="15" fill="#C6DBF2" stroke="#8FB8E8" stroke-width="1.5"/>
+                    <ellipse cx="45" cy="105" rx="8" ry="15" fill="#C6DBF2" stroke="#8FB8E8" stroke-width="1.5"/>
+                    <ellipse cx="65" cy="105" rx="8" ry="15" fill="#C6DBF2" stroke="#8FB8E8" stroke-width="1.5"/>
+                    <ellipse cx="85" cy="105" rx="8" ry="15" fill="#C6DBF2" stroke="#8FB8E8" stroke-width="1.5"/>
+                    <!-- Pati detayları -->
+                    <ellipse cx="25" cy="118" rx="6" ry="3" fill="#E8A5C4"/>
+                    <ellipse cx="45" cy="118" rx="6" ry="3" fill="#E8A5C4"/>
+                    <ellipse cx="65" cy="118" rx="6" ry="3" fill="#E8A5C4"/>
+                    <ellipse cx="85" cy="118" rx="6" ry="3" fill="#E8A5C4"/>
+                </g>
+            </g>
+            
+            <!-- Sevimli Kedi (Sağ üst) - Pastel Yeşil -->
+            <g class="hero-float" style="animation-delay: 1s;">
+                <g transform="translate(550, 60)">
+                    <!-- Vücut -->
+                    <ellipse cx="50" cy="70" rx="30" ry="20" fill="#C8E6C9" stroke="#A5D6A7" stroke-width="2"/>
+                    <!-- Kafa -->
+                    <circle cx="50" cy="40" r="20" fill="#DCEDC8" stroke="#A5D6A7" stroke-width="2"/>
+                    <!-- Kulaklar (sivri) -->
+                    <polygon points="35,25 40,10 45,25" fill="#B8E6B8" stroke="#88C999" stroke-width="1.5"/>
+                    <polygon points="55,25 60,10 65,25" fill="#B8E6B8" stroke="#88C999" stroke-width="1.5"/>
+                    <!-- İç kulak -->
+                    <polygon points="37,22 40,15 43,22" fill="#F4C2C2"/>
+                    <polygon points="57,22 60,15 63,22" fill="#F4C2C2"/>
+                    <!-- Gözler (büyük ve sevimli) -->
+                    <ellipse cx="42" cy="37" rx="5" ry="7" fill="#FFFFFF" stroke="#A5D6A7" stroke-width="1"/>
+                    <ellipse cx="58" cy="37" rx="5" ry="7" fill="#FFFFFF" stroke="#A5D6A7" stroke-width="1"/>
+                    <ellipse cx="42" cy="39" rx="3" ry="5" fill="#66BB6A"/>
+                    <ellipse cx="58" cy="39" rx="3" ry="5" fill="#66BB6A"/>
+                    <ellipse cx="43" cy="37" rx="1" ry="2" fill="#FFFFFF"/>
+                    <ellipse cx="59" cy="37" rx="1" ry="2" fill="#FFFFFF"/>
+                    <!-- Burun (üçgen) -->
+                    <polygon points="48,43 52,43 50,47" fill="#E8A5C4" stroke="#D480A8" stroke-width="1"/>
+                    <!-- Ağız -->
+                    <path d="M50 47 Q45 52 40 50" stroke="#A5D6A7" stroke-width="2" fill="none"/>
+                    <path d="M50 47 Q55 52 60 50" stroke="#A5D6A7" stroke-width="2" fill="none"/>
+                    <!-- Bıyıklar -->
+                    <line x1="25" y1="42" x2="35" y2="40" stroke="#88C999" stroke-width="2"/>
+                    <line x1="25" y1="47" x2="35" y2="47" stroke="#88C999" stroke-width="2"/>
+                    <line x1="65" y1="40" x2="75" y2="42" stroke="#88C999" stroke-width="2"/>
+                    <line x1="65" y1="47" x2="75" y2="47" stroke="#88C999" stroke-width="2"/>
+                    <!-- Kuyruk (kıvrık) -->
+                    <path d="M20 75 Q10 60 15 45 Q20 30 10 20 Q5 10 15 5" stroke="#A5D6A7" stroke-width="5" fill="none"/>
+                    <!-- Bacaklar -->
+                    <ellipse cx="35" cy="90" rx="6" ry="12" fill="#D7E8D7" stroke="#A5D6A7" stroke-width="1.5"/>
+                    <ellipse cx="50" cy="90" rx="6" ry="12" fill="#D7E8D7" stroke="#A5D6A7" stroke-width="1.5"/>
+                    <ellipse cx="65" cy="90" rx="6" ry="12" fill="#D7E8D7" stroke="#A5D6A7" stroke-width="1.5"/>
+                    <!-- Pati detayları -->
+                    <ellipse cx="35" cy="100" rx="4" ry="2" fill="#E8A5C4"/>
+                    <ellipse cx="50" cy="100" rx="4" ry="2" fill="#E8A5C4"/>
+                    <ellipse cx="65" cy="100" rx="4" ry="2" fill="#E8A5C4"/>
+                </g>
+            </g>
+            
+            <!-- Oyuncu Köpek Yavrusu (Sol alt) - Pastel Mor -->
+            <g class="hero-float" style="animation-delay: 2s;">
+                <g transform="translate(100, 400)">
+                    <!-- Vücut (küçük) -->
+                    <ellipse cx="30" cy="50" rx="25" ry="18" fill="#D1C4E9" stroke="#B39DDB" stroke-width="2"/>
+                    <!-- Kafa (büyük - yavru oranları) -->
+                    <circle cx="30" cy="25" r="20" fill="#E1BEE7" stroke="#B39DDB" stroke-width="2"/>
+                    <!-- Kulaklar (yumuşak) -->
+                    <ellipse cx="15" cy="15" rx="8" ry="15" fill="#C8A2C8" stroke="#9575CD" stroke-width="1.5"/>
+                    <ellipse cx="45" cy="15" rx="8" ry="15" fill="#C8A2C8" stroke="#9575CD" stroke-width="1.5"/>
+                    <!-- Gözler (büyük parlak) -->
+                    <circle cx="23" cy="22" r="6" fill="#FFFFFF" stroke="#B39DDB" stroke-width="1"/>
+                    <circle cx="37" cy="22" r="6" fill="#FFFFFF" stroke="#B39DDB" stroke-width="1"/>
+                    <circle cx="23" cy="22" r="4" fill="#7E57C2"/>
+                    <circle cx="37" cy="22" r="4" fill="#7E57C2"/>
+                    <circle cx="25" cy="20" r="1.5" fill="#FFFFFF"/>
+                    <circle cx="39" cy="20" r="1.5" fill="#FFFFFF"/>
+                    <!-- Burun -->
+                    <circle cx="30" cy="30" r="3" fill="#E8A5C4" stroke="#D480A8" stroke-width="1"/>
+                    <!-- Ağız (şaşkın/mutlu) -->
+                    <ellipse cx="30" cy="35" rx="5" ry="3" fill="#F4C2C2" stroke="#B39DDB" stroke-width="1"/>
+                    <!-- Kuyruk (heyecanlı) -->
+                    <path d="M55 45 Q70 35 65 20 Q60 5 70 -5" stroke="#B39DDB" stroke-width="5" fill="none"/>
+                    <!-- Bacaklar -->
+                    <ellipse cx="18" cy="68" rx="5" ry="10" fill="#E0D2F2" stroke="#B39DDB" stroke-width="1.5"/>
+                    <ellipse cx="30" cy="68" rx="5" ry="10" fill="#E0D2F2" stroke="#B39DDB" stroke-width="1.5"/>
+                    <ellipse cx="42" cy="68" rx="5" ry="10" fill="#E0D2F2" stroke="#B39DDB" stroke-width="1.5"/>
+                    <!-- Pati detayları -->
+                    <ellipse cx="18" cy="76" rx="3" ry="2" fill="#E8A5C4"/>
+                    <ellipse cx="30" cy="76" rx="3" ry="2" fill="#E8A5C4"/>
+                    <ellipse cx="42" cy="76" rx="3" ry="2" fill="#E8A5C4"/>
+                </g>
+            </g>
+            
+            <!-- Uyuyan Kedi (Sağ alt) - Pastel Pembe -->
+            <g class="hero-float" style="animation-delay: 3s;">
+                <g transform="translate(580, 420)">
+                    <!-- Vücut (yuvarlak) -->
+                    <ellipse cx="40" cy="50" rx="35" ry="25" fill="#F8BBD9" stroke="#F48FB1" stroke-width="2"/>
+                    <!-- Kafa -->
+                    <ellipse cx="40" cy="30" rx="18" ry="15" fill="#FCE4EC" stroke="#F48FB1" stroke-width="2"/>
+                    <!-- Kulaklar -->
+                    <polygon points="25,20 30,8 35,20" fill="#F5A9D0" stroke="#EC407A" stroke-width="1.5"/>
+                    <polygon points="45,20 50,8 55,20" fill="#F5A9D0" stroke="#EC407A" stroke-width="1.5"/>
+                    <!-- İç kulak -->
+                    <polygon points="27,17 30,12 33,17" fill="#F4C2C2"/>
+                    <polygon points="47,17 50,12 53,17" fill="#F4C2C2"/>
+                    <!-- Gözler (kapalı) -->
+                    <path d="M32 28 Q37 25 42 28" stroke="#EC407A" stroke-width="2" fill="none"/>
+                    <path d="M38 28 Q43 25 48 28" stroke="#EC407A" stroke-width="2" fill="none"/>
+                    <!-- Kirpikler -->
+                    <line x1="30" y1="26" x2="29" y2="24" stroke="#EC407A" stroke-width="1"/>
+                    <line x1="34" y1="25" x2="33" y2="23" stroke="#EC407A" stroke-width="1"/>
+                    <line x1="46" y1="25" x2="47" y2="23" stroke="#EC407A" stroke-width="1"/>
+                    <line x1="50" y1="26" x2="51" y2="24" stroke="#EC407A" stroke-width="1"/>
+                    <!-- Burun -->
+                    <polygon points="38,32 42,32 40,35" fill="#E8A5C4" stroke="#D480A8" stroke-width="1"/>
+                    <!-- Ağız (memnun) -->
+                    <path d="M40 35 Q35 38 32 36" stroke="#F48FB1" stroke-width="1.5" fill="none"/>
+                    <path d="M40 35 Q45 38 48 36" stroke="#F48FB1" stroke-width="1.5" fill="none"/>
+                    <!-- Kuyruk (sakin) -->
+                    <path d="M75 55 Q85 45 80 35" stroke="#F48FB1" stroke-width="4" fill="none"/>
+                    <!-- Bacaklar (toplu) -->
+                    <ellipse cx="25" cy="65" rx="8" ry="6" fill="#FADDE1" stroke="#F48FB1" stroke-width="1.5"/>
+                    <ellipse cx="55" cy="65" rx="8" ry="6" fill="#FADDE1" stroke="#F48FB1" stroke-width="1.5"/>
+                </g>
+            </g>
+            
+            <!-- Pastel Kalpler -->
+            <g class="hero-pulse">
+                <g transform="translate(200, 150)" fill="#E1BEE7" opacity="0.6">
+                    <path d="M0 10 C-3 5, -8 5, -8 10 C-8 5, -13 5, -10 10 C-10 15, 0 20, 0 20 C0 20, 10 15, 10 10 C13 5, 8 5, 8 10 C8 5, 3 5, 0 10 Z"/>
+                </g>
+                <g transform="translate(400, 300)" fill="#C8E6C9" opacity="0.6">
+                    <path d="M0 8 C-2 4, -6 4, -6 8 C-6 4, -10 4, -8 8 C-8 12, 0 16, 0 16 C0 16, 8 12, 8 8 C10 4, 6 4, 6 8 C6 4, 2 4, 0 8 Z"/>
+                </g>
+                <g transform="translate(600, 200)" fill="#F8BBD9" opacity="0.6">
+                    <path d="M0 6 C-2 3, -4 3, -4 6 C-4 3, -6 3, -5 6 C-5 9, 0 12, 0 12 C0 12, 5 9, 5 6 C6 3, 4 3, 4 6 C4 3, 2 3, 0 6 Z"/>
+                </g>
+            </g>
+            
+            <!-- Pastel Oyun Kemikleri -->
+            <g class="hero-float" style="animation-delay: 4s;">
+                <g transform="translate(150, 350)" fill="#B8D4F0" opacity="0.7">
+                    <ellipse cx="0" cy="0" rx="15" ry="3"/>
+                    <circle cx="-12" cy="0" r="5"/>
+                    <circle cx="12" cy="0" r="5"/>
+                    <circle cx="-12" cy="-3" r="2" fill="#D1E7F7"/>
+                    <circle cx="-12" cy="3" r="2" fill="#D1E7F7"/>
+                    <circle cx="12" cy="-3" r="2" fill="#D1E7F7"/>
+                    <circle cx="12" cy="3" r="2" fill="#D1E7F7"/>
+                </g>
+                <g transform="translate(500, 120) rotate(30)" fill="#C8E6C9" opacity="0.7">
+                    <ellipse cx="0" cy="0" rx="12" ry="2"/>
+                    <circle cx="-10" cy="0" r="4"/>
+                    <circle cx="10" cy="0" r="4"/>
+                    <circle cx="-10" cy="-2" r="1.5" fill="#DCEDC8"/>
+                    <circle cx="-10" cy="2" r="1.5" fill="#DCEDC8"/>
+                    <circle cx="10" cy="-2" r="1.5" fill="#DCEDC8"/>
+                    <circle cx="10" cy="2" r="1.5" fill="#DCEDC8"/>
+                </g>
+            </g>
+            
+            <!-- Pastel Yuva/Ev Simgesi -->
+            <g class="hero-pulse" style="animation-delay: 1.5s;">
+                <g transform="translate(350, 80)" fill="#E1BEE7" opacity="0.8">
+                    <!-- Ev -->
+                    <polygon points="0,20 -15,35 15,35" fill="#E1BEE7" stroke="#B39DDB" stroke-width="2"/>
+                    <rect x="-10" y="35" width="20" height="15" fill="#F3E5F5" stroke="#B39DDB" stroke-width="1.5"/>
+                    <!-- Kapı -->
+                    <rect x="-3" y="42" width="6" height="8" fill="#F8BBD9" stroke="#F48FB1" stroke-width="1"/>
+                    <!-- Pencere -->
+                    <rect x="5" y="38" width="4" height="4" fill="#B8D4F0" stroke="#8FB8E8" stroke-width="1"/>
+                    <!-- Çiçekler -->
+                    <circle cx="-8" cy="50" r="2" fill="#C8E6C9"/>
+                    <circle cx="8" cy="50" r="2" fill="#F8BBD9"/>
+                    <!-- Kalp (yuva sevgisi) -->
+                    <g transform="translate(0, 45)">
+                        <path d="M0 3 C-1 1, -3 1, -3 3 C-3 1, -5 1, -4 3 C-4 5, 0 7, 0 7 C0 7, 4 5, 4 3 C5 1, 3 1, 3 3 C3 1, 1 1, 0 3 Z" fill="#E8A5C4"/>
+                    </g>
+                </g>
+            </g>
+        </svg>
+    </div>
+    
+    <!-- Ana İçerik -->
+    <div class="z-10 max-w-4xl p-8 mx-auto relative hero-float">
+        <!-- Çerçeve Efekti -->
+        <div class="absolute inset-0 bg-white bg-opacity-20 rounded-3xl glass-effect border border-white border-opacity-40 shadow-2xl"></div>
         
-        <form action="index.php" method="GET" class="flex flex-col md:flex-row gap-4 items-center justify-center">
-            <div class="w-full md:w-1/3">
-                <label for="pet_keyword" class="sr-only">Hangi Pet?</label>
-                <input type="text" id="pet_keyword" name="pet_keyword" placeholder="Hangi Pet? (Örn: Kedi, Köpek)" 
-                       value="<?= htmlspecialchars($pet_keyword) ?>"
-                       class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-koyu-pembe focus:border-koyu-pembe text-gray-700">
+        <div class="relative z-10">
+            <div class="relative flex flex-col items-center justify-center">
+                <!-- Pati izleriyle çevrili başlık -->
+                <div class="relative inline-block">
+                    <!-- Üst pati izleri -->
+                    <svg class="absolute -top-10 -left-16 w-16 h-16 opacity-90" viewBox="0 0 60 60"><g><ellipse cx="30" cy="40" rx="14" ry="10" fill="#4A90E2"/><circle cx="12" cy="20" r="7" fill="#4A90E2"/><circle cx="48" cy="20" r="7" fill="#4A90E2"/><circle cx="20" cy="10" r="5" fill="#4A90E2"/><circle cx="40" cy="10" r="5" fill="#4A90E2"/></g></svg>
+                    <svg class="absolute -top-10 -right-16 w-16 h-16 opacity-90" viewBox="0 0 60 60"><g><ellipse cx="30" cy="40" rx="14" ry="10" fill="#F687B3"/><circle cx="12" cy="20" r="7" fill="#F687B3"/><circle cx="48" cy="20" r="7" fill="#F687B3"/><circle cx="20" cy="10" r="5" fill="#F687B3"/><circle cx="40" cy="10" r="5" fill="#F687B3"/></g></svg>
+                    <!-- Sol pati -->
+                    <svg class="absolute top-8 -left-20 w-12 h-12 opacity-80" viewBox="0 0 60 60"><g><ellipse cx="30" cy="40" rx="12" ry="8" fill="#48BB78"/><circle cx="12" cy="20" r="6" fill="#48BB78"/><circle cx="48" cy="20" r="6" fill="#48BB78"/><circle cx="20" cy="10" r="4" fill="#48BB78"/><circle cx="40" cy="10" r="4" fill="#48BB78"/></g></svg>
+                    <!-- Sağ pati -->
+                    <svg class="absolute top-8 -right-20 w-12 h-12 opacity-80" viewBox="0 0 60 60"><g><ellipse cx="30" cy="40" rx="12" ry="8" fill="#B39DDB"/><circle cx="12" cy="20" r="6" fill="#B39DDB"/><circle cx="48" cy="20" r="6" fill="#B39DDB"/><circle cx="20" cy="10" r="4" fill="#B39DDB"/><circle cx="40" cy="10" r="4" fill="#B39DDB"/></g></svg>
+                    <!-- Alt pati izleri -->
+                    <svg class="absolute -bottom-10 left-1/2 -translate-x-1/2 w-20 h-12 opacity-80" viewBox="0 0 60 40"><g><ellipse cx="30" cy="30" rx="16" ry="8" fill="#E1BEE7"/><circle cx="12" cy="10" r="6" fill="#E1BEE7"/><circle cx="48" cy="10" r="6" fill="#E1BEE7"/><circle cx="20" cy="2" r="4" fill="#E1BEE7"/><circle cx="40" cy="2" r="4" fill="#E1BEE7"/></g></svg>
+                    <h1 class="text-7xl font-extrabold mb-6 drop-shadow-2xl tracking-wide px-12 py-4 bg-white bg-opacity-80 rounded-3xl border-4 border-blue-300 relative z-10 shadow-xl">
+                        <span class="gradient-text text-blue-700">YUVA ARAYANLAR</span>
+                    </h1>
+                </div>
+                <p class="text-2xl mb-8 drop-shadow-lg leading-relaxed font-medium text-gray-700 bg-white bg-opacity-70 px-6 py-3 rounded-xl border-2 border-pink-200 mt-2">
+                    Onlara <span class="text-blue-500 font-bold">aşk</span>, <span class="text-pink-500 font-bold">dost arkadaş</span>, <span class="text-green-500 font-bold">mutluluk</span>.<br>
+                    Siz de onların <span class="text-purple-500 font-bold text-3xl">şansı</span> olabilirsiniz.
+                </p>
             </div>
-            <div class="w-full md:w-1/3">
-                <label for="city_keyword" class="sr-only">Hangi Şehir?</label>
-                <input type="text" id="city_keyword" name="city_keyword" placeholder="Hangi Şehir? (Örn: İstanbul)" 
-                       value="<?= htmlspecialchars($city_keyword) ?>"
-                       class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-koyu-pembe focus:border-koyu-pembe text-gray-700">
+        </div>
+        
+        <!-- Arama Formu -->
+        <div class="relative z-10 mt-8">
+            <div class="bg-white bg-opacity-25 glass-effect rounded-2xl p-6 border border-white border-opacity-40 shadow-2xl">
+                <form action="index.php" method="GET" class="flex flex-col md:flex-row gap-4 items-center justify-center">
+                    <div class="w-full md:w-1/3 relative">
+                        <label for="pet_keyword" class="sr-only">Hangi Pet?</label>
+                        <div class="relative">
+                            <i class="fas fa-paw absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400 text-lg"></i>
+                            <input type="text" id="pet_keyword" name="pet_keyword" placeholder="Hangi Pet? (Örn: Kedi, Köpek)" 
+                                   value="<?= htmlspecialchars($pet_keyword) ?>"
+                                   class="w-full pl-12 p-4 border-0 rounded-xl shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-200 focus:ring-opacity-50 text-gray-700 bg-white bg-opacity-95 glass-effect transition-all duration-300 hover:shadow-xl">
+                        </div>
+                    </div>
+                    <div class="w-full md:w-1/3 relative">
+                        <label for="city_keyword" class="sr-only">Hangi Şehir?</label>
+                        <div class="relative">
+                            <i class="fas fa-map-marker-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-green-400 text-lg"></i>
+                            <input type="text" id="city_keyword" name="city_keyword" placeholder="Hangi Şehir? (Örn: İstanbul)" 
+                                   value="<?= htmlspecialchars($city_keyword) ?>"
+                                   class="w-full pl-12 p-4 border-0 rounded-xl shadow-lg focus:outline-none focus:ring-4 focus:ring-green-200 focus:ring-opacity-50 text-gray-700 bg-white bg-opacity-95 glass-effect transition-all duration-300 hover:shadow-xl">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full md:w-auto bg-gradient-to-r from-blue-300 to-purple-300 hover:from-blue-400 hover:to-purple-400 text-white font-bold py-4 px-8 rounded-xl shadow-xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center justify-center">
+                        <i class="fas fa-search mr-3 text-lg"></i>
+                        <span class="text-lg font-semibold">Ara</span>
+                    </button>
+                </form>
             </div>
-            <button type="submit" class="w-full md:w-auto bg-koyu-pembe hover:bg-pink-700 text-white font-bold py-3 px-8 rounded-md shadow-lg transition duration-300 flex items-center justify-center">
-                <i class="fas fa-search mr-3"></i>Ara
-            </button>
-        </form>
+        </div>
     </div>
 </div>
 
