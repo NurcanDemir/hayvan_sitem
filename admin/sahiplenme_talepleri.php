@@ -118,10 +118,21 @@ include("includes/admin_header.php"); // Doğru yolu kontrol edin
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
                                     <div id="dropdown_<?= $talep['talep_id'] ?>" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
-                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 action-btn" data-action="onayla" data-id="<?= $talep['talep_id'] ?>">Onayla</a>
-                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 action-btn" data-action="reddet" data-id="<?= $talep['talep_id'] ?>">Reddet</a>
-                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 action-btn" data-action="tamamla" data-id="<?= $talep['talep_id'] ?>">Tamamla</a>
-                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 action-btn" data-action="not_ekle" data-id="<?= $talep['talep_id'] ?>">Not Ekle</a>
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 action-btn" data-action="onayla" data-id="<?= $talep['talep_id'] ?>">
+                                            <i class="fas fa-check mr-2"></i>Onayla
+                                        </a>
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 action-btn" data-action="reddet" data-id="<?= $talep['talep_id'] ?>">
+                                            <i class="fas fa-times mr-2"></i>Reddet
+                                        </a>
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 action-btn" data-action="tamamla" data-id="<?= $talep['talep_id'] ?>">
+                                            <i class="fas fa-check-circle mr-2"></i>Tamamla
+                                        </a>
+                                        <a href="admin_talep_bilgilendir.php?id=<?= $talep['talep_id'] ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <i class="fas fa-bell mr-2"></i>Bilgilendir
+                                        </a>
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 action-btn" data-action="not_ekle" data-id="<?= $talep['talep_id'] ?>">
+                                            <i class="fas fa-sticky-note mr-2"></i>Not Ekle
+                                        </a>
                                     </div>
                                 </div>
                             </td>

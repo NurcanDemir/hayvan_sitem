@@ -62,7 +62,7 @@
             </li>
             <li class="w-full">
                 <a class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white text-gray-400
-                    <?= (basename($_SERVER['PHP_SELF']) == 'admin_talep_bilgilendir.php') ? 'bg-gray-700 text-white' : '' ?> text-base" href="admin_talep_bilgilendir.php">
+                    <?= (basename($_SERVER['PHP_SELF']) == 'admin_talep_bilgilendir.php' || strpos($_SERVER['REQUEST_URI'], 'admin_talep_bilgilendir.php') !== false) ? 'bg-gray-700 text-white' : '' ?> text-base" href="admin_talep_bilgilendir.php">
                     <i class="fas fa-bell mr-2"></i>Bilgilendirme
                 </a>
             </li>

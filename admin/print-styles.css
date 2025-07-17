@@ -1,0 +1,268 @@
+/* Raporlar sayfası için yazdırma stilleri */
+@media print {
+    /* Genel sayfa ayarları */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+    
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+        line-height: 1.4;
+    }
+    
+    /* Sayfayı bölen elementleri gizle */
+    .no-print,
+    nav,
+    .navbar,
+    .sidebar,
+    button,
+    .btn,
+    .pagination,
+    .form-control,
+    .alert,
+    .toast,
+    .modal,
+    .dropdown-menu {
+        display: none !important;
+    }
+    
+    /* Sayfa başlığı */
+    h1 {
+        color: #333 !important;
+        font-size: 18px !important;
+        margin-bottom: 20px !important;
+        text-align: center;
+        page-break-after: avoid;
+    }
+    
+    h2 {
+        color: #555 !important;
+        font-size: 16px !important;
+        margin-top: 25px !important;
+        margin-bottom: 15px !important;
+        page-break-after: avoid;
+    }
+    
+    h3 {
+        color: #666 !important;
+        font-size: 14px !important;
+        margin-bottom: 10px !important;
+        page-break-after: avoid;
+    }
+    
+    /* Kartlar ve kutular */
+    .bg-white,
+    .shadow-lg,
+    .rounded-lg {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+        border-radius: 0 !important;
+        margin-bottom: 20px !important;
+        page-break-inside: avoid;
+    }
+    
+    /* Grid düzeni */
+    .grid {
+        display: block !important;
+    }
+    
+    .grid > div {
+        display: block !important;
+        width: 100% !important;
+        margin-bottom: 10px !important;
+    }
+    
+    /* İstatistik kartları */
+    .bg-gradient-to-r {
+        background: #f8f9fa !important;
+        color: #333 !important;
+        border: 1px solid #ddd !important;
+        page-break-inside: avoid;
+    }
+    
+    .text-white {
+        color: #333 !important;
+    }
+    
+    .text-3xl {
+        font-size: 20px !important;
+    }
+    
+    .text-xl {
+        font-size: 16px !important;
+    }
+    
+    .text-lg {
+        font-size: 14px !important;
+    }
+    
+    .text-sm {
+        font-size: 12px !important;
+    }
+    
+    /* Tablolar */
+    table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin-bottom: 20px !important;
+        page-break-inside: avoid;
+    }
+    
+    th, td {
+        border: 1px solid #ddd !important;
+        padding: 8px !important;
+        text-align: left !important;
+    }
+    
+    th {
+        background-color: #f8f9fa !important;
+        font-weight: bold !important;
+    }
+    
+    /* Resimler */
+    img {
+        max-width: 50px !important;
+        max-height: 50px !important;
+        object-fit: cover !important;
+    }
+    
+    /* Progress barlar */
+    .bg-blue-500,
+    .bg-green-500,
+    .bg-red-500,
+    .bg-yellow-500 {
+        background-color: #333 !important;
+    }
+    
+    .bg-blue-200,
+    .bg-green-200,
+    .bg-red-200,
+    .bg-yellow-200 {
+        background-color: #f0f0f0 !important;
+    }
+    
+    /* Spacing */
+    .p-6 {
+        padding: 15px !important;
+    }
+    
+    .p-4 {
+        padding: 10px !important;
+    }
+    
+    .mb-8 {
+        margin-bottom: 20px !important;
+    }
+    
+    .mb-4 {
+        margin-bottom: 15px !important;
+    }
+    
+    /* Flex düzeni */
+    .flex {
+        display: flex !important;
+    }
+    
+    .justify-between {
+        justify-content: space-between !important;
+    }
+    
+    .items-center {
+        align-items: center !important;
+    }
+    
+    /* Sayfa sonları */
+    .page-break {
+        page-break-before: always;
+    }
+    
+    .page-break-avoid {
+        page-break-inside: avoid;
+    }
+    
+    /* İkonlar */
+    .fas,
+    .far,
+    .fab {
+        font-size: 14px !important;
+    }
+    
+    /* Renkli elementler */
+    .bg-green-100 {
+        background-color: #f0f8f0 !important;
+    }
+    
+    .bg-blue-100 {
+        background-color: #f0f4f8 !important;
+    }
+    
+    .bg-red-100 {
+        background-color: #fef2f2 !important;
+    }
+    
+    .bg-yellow-100 {
+        background-color: #fffbf0 !important;
+    }
+    
+    .bg-purple-100 {
+        background-color: #f8f4ff !important;
+    }
+    
+    .bg-orange-100 {
+        background-color: #fff7ed !important;
+    }
+    
+    /* Tarih ve saat */
+    .print-date::after {
+        content: " (Yazdırma Tarihi: " attr(data-date) ")";
+        font-size: 10px;
+        color: #666;
+    }
+    
+    /* Sayfa numarası */
+    @page {
+        margin: 2cm;
+        @bottom-right {
+            content: "Sayfa " counter(page) " / " counter(pages);
+            font-size: 10px;
+            color: #666;
+        }
+    }
+}
+
+/* Rapor başlığı için özel stil */
+.print-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #333;
+}
+
+.print-header h1 {
+    margin: 0;
+    font-size: 24px;
+    color: #333;
+}
+
+.print-header .subtitle {
+    font-size: 14px;
+    color: #666;
+    margin-top: 5px;
+}
+
+/* Bölüm ayırıcıları */
+.section-divider {
+    margin: 30px 0;
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+}
+
+/* Küçük metin */
+.small-text {
+    font-size: 10px;
+    color: #666;
+}

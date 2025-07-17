@@ -26,13 +26,28 @@ $talep_id = (int)$_GET['talep_id'];
 $sql = "SELECT si.*, i.baslik, i.foto 
         FROM sahiplenme_istekleri si 
         INNER JOIN ilanlar i ON si.ilan_id = i.id 
-        WHERE si.id = ? AND si.talep_eden_kullanici_id = ? AND si.durum = 'tamamlandı'";
+        WHERE si.id = ? AND si.talep_eden_kullanici_id = ? AND (si.durum = 'tamamlandı' OR si.durum = 'tamamlandi')";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("ii", $talep_id, $kullanici_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows == 0) {
+    // Talep var mı kontrol et
+    $sql_check = "SELECT si.durum FROM sahiplenme_istekleri si WHERE si.id = ? AND si.talep_eden_kullanici_id = ?";
+    $stmt_check = $conn->prepare($sql_check);
+    $stmt_check->bind_param("ii", $talep_id, $kullanici_id);
+    $stmt_check->execute();
+    $check_result = $stmt_check->get_result();
+    
+    if ($check_result->num_rows > 0) {
+        $check_row = $check_result->fetch_assoc();
+        $_SESSION['hata_mesaj'] = "Bu talep henüz tamamlanmamış. Durum: " . htmlspecialchars($check_row['durum']);
+    } else {
+        $_SESSION['hata_mesaj'] = "Bu talep size ait değil veya bulunamadı.";
+    }
+    
+    $stmt_check->close();
     header("Location: taleplerim.php");
     exit;
 }

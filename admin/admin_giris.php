@@ -12,32 +12,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($kullanici_adi) || empty($sifre)) {
         $hata_mesaji = "Kullanıcı adı ve şifre boş bırakılamaz.";
     } else {
-        // Kullanıcıyı veritabanından çek
-        $stmt = $conn->prepare("SELECT id, kullanici_adi, sifre, kullanici_tipi FROM kullanicilar WHERE kullanici_adi = ?");
+        // Admin tablosundan kullanıcıyı çek
+        $stmt = $conn->prepare("SELECT id, kullanici_adi, sifre, ad, soyad FROM admin WHERE kullanici_adi = ?");
         $stmt->bind_param("s", $kullanici_adi);
         $stmt->execute();
         $sonuc = $stmt->get_result();
 
         if ($sonuc->num_rows == 1) {
-            $kullanici = $sonuc->fetch_assoc();
+            $admin = $sonuc->fetch_assoc();
 
-            // Şifre doğrulama (password_verify ile hash'lenmiş şifreleri kontrol edin)
-            if (password_verify($sifre, $kullanici['sifre'])) {
-                // Kullanıcı tipi 'admin' mi kontrol et
-                if ($kullanici['kullanici_tipi'] === 'admin') {
-                    $_SESSION['admin_logged_in'] = true;
-                    $_SESSION['admin_id'] = $kullanici['id'];
-                    $_SESSION['admin_kullanici_adi'] = $kullanici['kullanici_adi'];
-                    header("Location: admin_panel.php"); // Admin paneli ana sayfasına yönlendir
-                    exit;
-                } else {
-                    $hata_mesaji = "Bu hesap admin yetkisine sahip değil.";
-                }
+            // Şifre doğrulama
+            if (password_verify($sifre, $admin['sifre']) || $sifre === $admin['sifre']) {
+                $_SESSION['admin_logged_in'] = true;
+                $_SESSION['admin_id'] = $admin['id'];
+                $_SESSION['admin_kullanici_adi'] = $admin['kullanici_adi'];
+                $_SESSION['admin_ad'] = $admin['ad'] ?? 'Admin';
+                $_SESSION['admin_soyad'] = $admin['soyad'] ?? 'User';
+                
+                header("Location: admin_panel.php");
+                exit();
             } else {
-                $hata_mesaji = "Yanlış kullanıcı adı veya şifre.";
+                $hata_mesaji = "Geçersiz şifre.";
             }
         } else {
-            $hata_mesaji = "Yanlış kullanıcı adı veya şifre.";
+            $hata_mesaji = "Kullanıcı bulunamadı.";
         }
         $stmt->close();
     }
