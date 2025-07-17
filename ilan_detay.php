@@ -160,34 +160,115 @@ if (isset($_SESSION['kullanici_id']) && $ilan) {
                     <p class="text-sm text-gray-500 mb-4">İlan Sahibi: <?= htmlspecialchars($ilan['kullanici_adi']) ?> (<?= date('d.m.Y', strtotime($ilan['olusturma_tarihi'] ?? '1970-01-01')) ?> tarihinde eklendi)</p>
 
                     <div class="flex space-x-4 mt-6">
-                        <?php if (isset($_SESSION['kullanici_id'])): ?>
-                            <button id="favoriteButton" data-ilan-id="<?= $ilan['id'] ?>"
-                                    class="<?= $is_favorited ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-gray-500 hover:bg-gray-600' ?> text-white font-bold py-2 px-4 rounded-md transition duration-300">
-                                <i class="fas fa-heart mr-2"></i>
-                                <?= $is_favorited ? 'Favorilerden Çıkar' : 'Favorilere Ekle' ?>
-                            </button>
+                        <?php if ($ilan['durum'] == 'sahiplenildi'): ?>
+                            <!-- Sahiplenilmiş ilan için özel gösterim -->
+                            <div class="bg-green-100 border border-green-400 text-green-700 px-6 py-4 rounded-lg w-full text-center">
+                                <i class="fas fa-heart text-green-600 mr-2"></i>
+                                <strong>Bu sevimli arkadaş mutlu yuvasını buldu!</strong>
+                                <p class="text-sm mt-2">Sahiplenme işlemi tamamlandı.</p>
+                            </div>
                         <?php else: ?>
-                            <a href="giris.php" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-md transition duration-300">
-                                <i class="fas fa-heart mr-2"></i> Favorilere Ekle (Giriş Yap)
-                            </a>
-                        <?php endif; ?>
-
-                        <?php if (isset($_SESSION['kullanici_id'])): ?>
-                            <?php if ($_SESSION['kullanici_id'] != $ilan['kullanici_id']): // Kendi ilanına talep gönderemez ?>
-                                <button id="sahiplenmeTalepButonu" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md transition duration-300">
-                                    <i class="fas fa-paw mr-2"></i> Sahiplenmek İstiyorum
+                            <!-- Aktif ilan için butonlar -->
+                            <?php if (isset($_SESSION['kullanici_id'])): ?>
+                                <button id="favoriteButton" data-ilan-id="<?= $ilan['id'] ?>"
+                                        class="<?= $is_favorited ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-gray-500 hover:bg-gray-600' ?> text-white font-bold py-2 px-4 rounded-md transition duration-300">
+                                    <i class="fas fa-heart mr-2"></i>
+                                    <?= $is_favorited ? 'Favorilerden Çıkar' : 'Favorilere Ekle' ?>
                                 </button>
                             <?php else: ?>
-                                <button class="bg-gray-500 text-white font-bold py-2 px-4 rounded-md cursor-not-allowed" disabled>
-                                    <i class="fas fa-info-circle mr-2"></i> Kendi ilanınız
-                                </button>
+                                <a href="giris.php" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-md transition duration-300">
+                                    <i class="fas fa-heart mr-2"></i> Favorilere Ekle (Giriş Yap)
+                                </a>
                             <?php endif; ?>
-                        <?php else: ?>
-                            <a href="giris.php" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md transition duration-300">
-                                <i class="fas fa-paw mr-2"></i> Sahiplenmek İstiyorum (Giriş Yap)
-                            </a>
+
+                            <?php if (isset($_SESSION['kullanici_id'])): ?>
+                                <?php if ($_SESSION['kullanici_id'] != $ilan['kullanici_id']): // Kendi ilanına talep gönderemez ?>
+                                    <button id="sahiplenmeTalepButonu" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md transition duration-300">
+                                        <i class="fas fa-paw mr-2"></i> Sahiplenmek İstiyorum
+                                    </button>
+                                <?php else: ?>
+                                    <button class="bg-gray-500 text-white font-bold py-2 px-4 rounded-md cursor-not-allowed" disabled>
+                                        <i class="fas fa-info-circle mr-2"></i> Kendi ilanınız
+                                    </button>
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <a href="giris.php" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md transition duration-300">
+                                    <i class="fas fa-paw mr-2"></i> Sahiplenmek İstiyorum (Giriş Yap)
+                                </a>
+                            <?php endif; ?>
                         <?php endif; ?>
                     </div>
+                    
+                    <?php if ($ilan['durum'] == 'sahiplenildi'): ?>
+                        <!-- Sahiplenme yorumlarını göster -->
+                        <?php
+                        // Önce sahiplenen_yorumu kolonunun var olup olmadığını kontrol et
+                        $columns_check = $conn->query("SHOW COLUMNS FROM sahiplenme_istekleri LIKE 'sahiplenen_yorumu'");
+                        $column_exists = $columns_check->num_rows > 0;
+                        
+                        if ($column_exists) {
+                            $stmt_yorum = $conn->prepare("
+                                SELECT si.sahiplenen_yorumu, si.yorum_tarihi, si.talep_eden_ad_soyad
+                                FROM sahiplenme_istekleri si
+                                WHERE si.ilan_id = ? AND si.durum = 'tamamlandı' AND si.sahiplenen_yorumu IS NOT NULL
+                                ORDER BY si.yorum_tarihi DESC
+                            ");
+                            $stmt_yorum->bind_param("i", $ilan['id']);
+                            $stmt_yorum->execute();
+                            $yorum_result = $stmt_yorum->get_result();
+                        } else {
+                            // Kolon yoksa boş result set oluştur
+                            $yorum_result = null;
+                        }
+                        ?>
+                        
+                        <?php if ($column_exists && $yorum_result && $yorum_result->num_rows > 0): ?>
+                            <div class="mt-8 bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-lg">
+                                <h3 class="text-xl font-bold text-gray-800 mb-4">
+                                    <i class="fas fa-comments text-green-600 mr-2"></i>
+                                    Yeni Ailesinden Haberler
+                                </h3>
+                                
+                                <?php while ($yorum = $yorum_result->fetch_assoc()): ?>
+                                    <div class="bg-white p-4 rounded-lg shadow-sm mb-4 border-l-4 border-green-500">
+                                        <div class="flex items-center mb-2">
+                                            <i class="fas fa-user-circle text-green-600 mr-2"></i>
+                                            <strong class="text-green-800"><?= htmlspecialchars($yorum['talep_eden_ad_soyad']) ?></strong>
+                                            <span class="text-gray-500 text-sm ml-2">
+                                                • <?= date('d.m.Y H:i', strtotime($yorum['yorum_tarihi'])) ?>
+                                            </span>
+                                        </div>
+                                        <p class="text-gray-700 italic leading-relaxed">
+                                            <i class="fas fa-quote-left text-green-400 mr-1"></i>
+                                            <?= nl2br(htmlspecialchars($yorum['sahiplenen_yorumu'])) ?>
+                                            <i class="fas fa-quote-right text-green-400 ml-1"></i>
+                                        </p>
+                                    </div>
+                                <?php endwhile; ?>
+                            </div>
+                        <?php elseif ($column_exists): ?>
+                            <div class="mt-8 bg-yellow-50 p-6 rounded-lg border-l-4 border-yellow-500">
+                                <h3 class="text-lg font-semibold text-yellow-800 mb-2">
+                                    <i class="fas fa-clock text-yellow-600 mr-2"></i>
+                                    Henüz Yorum Yok
+                                </h3>
+                                <p class="text-yellow-700">Bu sevimli arkadaş yeni ailesinden henüz deneyimlerini paylaşmadı.</p>
+                            </div>
+                        <?php else: ?>
+                            <div class="mt-8 bg-blue-50 p-6 rounded-lg border-l-4 border-blue-500">
+                                <h3 class="text-lg font-semibold text-blue-800 mb-2">
+                                    <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                                    Yorum Sistemi
+                                </h3>
+                                <p class="text-blue-700">Yorum sistemi için veritabanı güncellemesi gerekiyor.</p>
+                                <p class="text-blue-600 text-sm mt-2">
+                                    <a href="manual_db_update.php" class="underline">Güncelleme için tıklayın</a>
+                                </p>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <?php if ($column_exists && isset($stmt_yorum)) $stmt_yorum->close(); ?>
+                    <?php endif; ?>
                 </div>
             </div>
         <?php endif; ?>

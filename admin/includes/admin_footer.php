@@ -91,7 +91,7 @@
                 if (result.isConfirmed) {
                     let formData = new FormData();
                     formData.append('talep_id', talepId);
-                    formData.append('action', action);
+                    formData.append('action', action === 'not_ekle' ? 'admin_note' : action);
                     if (showInput) {
                         formData.append('admin_note', result.value);
                     }

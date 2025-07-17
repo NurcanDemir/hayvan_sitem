@@ -39,6 +39,7 @@ $result = $stmt->get_result();
                         <th class="border border-gray-300 px-4 py-2 text-left">Mesajım</th>
                         <th class="border border-gray-300 px-4 py-2 text-left">Tarih</th>
                         <th class="border border-gray-300 px-4 py-2 text-left">Durum</th>
+                        <th class="border border-gray-300 px-4 py-2 text-left">İşlemler</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -48,10 +49,13 @@ $result = $stmt->get_result();
                 <td class="border border-gray-300 px-4 py-2"><?= nl2br(htmlspecialchars($row['mesaj'])) ?></td>
                 <td class="border border-gray-300 px-4 py-2"><?= isset($row['tarih']) ? htmlspecialchars($row['tarih']) : '' ?></td>
                 <td class="border border-gray-300 px-4 py-2">
-                    <?php if ($row['durum'] == 'Onaylandı'): ?>
+                    <?php if ($row['durum'] == 'tamamlandı'): ?>
+                        <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded">Tamamlandı</span>
+                        <div class="text-green-600 text-sm mt-1">Tebrikler! Sahiplendirme tamamlandı.</div>
+                    <?php elseif ($row['durum'] == 'onaylandı'): ?>
                         <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded">Onaylandı</span>
                         <div class="text-green-600 text-sm mt-1">Tebrikler! Talebiniz onaylandı. İlan sahibi sizinle iletişime geçecek.</div>
-                    <?php elseif ($row['durum'] == 'Reddedildi'): ?>
+                    <?php elseif ($row['durum'] == 'reddedildi'): ?>
                         <span class="inline-block bg-red-100 text-red-800 text-xs font-semibold px-2.5 py-0.5 rounded">Reddedildi</span>
                         <div class="text-red-600 text-sm mt-1">Üzgünüz, talebiniz reddedildi.</div>
                     <?php elseif ($row['durum'] == 'İletişim Kuruldu'): ?>
@@ -60,6 +64,17 @@ $result = $stmt->get_result();
                     <?php else: ?>
                         <span class="inline-block bg-gray-100 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded">Yeni</span>
                         <div class="text-gray-600 text-sm mt-1">Talebiniz beklemede.</div>
+                    <?php endif; ?>
+                </td>
+                <td class="border border-gray-300 px-4 py-2">
+                    <?php if ($row['durum'] == 'tamamlandı'): ?>
+                        <a href="sahiplenen_yorum_ekle.php?talep_id=<?= $row['id'] ?>" 
+                           class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm transition duration-200">
+                            <i class="fas fa-comment-dots mr-1"></i>
+                            <?= !empty($row['sahiplenen_yorumu']) ? 'Yorumu Düzenle' : 'Yorum Ekle' ?>
+                        </a>
+                    <?php else: ?>
+                        <span class="text-gray-400 text-sm">-</span>
                     <?php endif; ?>
                 </td>
             </tr>

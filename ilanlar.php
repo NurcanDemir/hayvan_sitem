@@ -25,10 +25,16 @@ $ilceler = [];
 $res = $conn->query("SELECT id, il_id, ad FROM ilce ORDER BY il_id, ad ASC");
 while($row = $res->fetch_assoc()) $ilceler[$row['il_id']][] = $row;
 
-// Hastalıklar
-$hastaliklar = [];
-$res = $conn->query("SELECT * FROM hastaliklar ORDER BY ad ASC");
-while($row = $res->fetch_assoc()) $hastaliklar[] = $row;
+// Hastalıklar (cins bazında)
+$hastaliklar_cins = [];
+$res = $conn->query("SELECT hc.cins_id, h.id, h.ad FROM hastaliklar_cinsler hc
+                     JOIN hastaliklar h ON hc.hastalik_id = h.id ORDER BY hc.cins_id, h.ad ASC");
+while($row = $res->fetch_assoc()) {
+    $hastaliklar_cins[$row['cins_id']][] = [
+        'id' => $row['id'],
+        'ad' => $row['ad']
+    ];
+}
 
 // --- Filtreleme için dinamik WHERE ---
 $where = "WHERE i.durum = 'aktif'";
@@ -147,9 +153,7 @@ $user_id = $_SESSION['kullanici_id'] ?? null; // user_id veya kullanici_id'nizi 
                 <label for="hastalik" class="block text-gray-700 text-sm font-semibold mb-2">Hastalık:</label>
                 <select name="hastalik_id" id="hastalik" class="form-select-tailwind">
                     <option value="">Tümü</option>
-                    <?php foreach($hastaliklar as $h): ?>
-                        <option value="<?= $h['id'] ?>" <?= (@$_GET['hastalik_id']==$h['id'])?'selected':'' ?>><?= htmlspecialchars($h['ad']) ?></option>
-                    <?php endforeach; ?>
+                    <!-- Hastalıklar dinamik olarak yüklenecek -->
                 </select>
             </div>
             <div>
@@ -228,43 +232,83 @@ $user_id = $_SESSION['kullanici_id'] ?? null; // user_id veya kullanici_id'nizi 
 <script>
     const cinsler = <?= json_encode($cinsler) ?>;
     const ilceler = <?= json_encode($ilceler) ?>;
+    const hastaliklarCins = <?= json_encode($hastaliklar_cins) ?>;
 
     document.addEventListener("DOMContentLoaded", function() {
-        // Cins dinamik doldurma
+        // Elements
         const kategoriSelect = document.getElementById('kategori');
         const cinsSelect = document.getElementById('cins');
-
-        if (kategoriSelect && cinsSelect) {
-            kategoriSelect.addEventListener('change', function() {
-                let val = this.value;
-                cinsSelect.innerHTML = '<option value="">Tümü</option>';
-                if (cinsler[val]) {
-                    cinsler[val].forEach(function(c) {
-                        const option = document.createElement('option');
-                        option.value = c.id;
-                        option.textContent = c.ad;
-                        cinsSelect.appendChild(option);
-                    });
-                }
-            });
-        }
-
-        // İlçe dinamik doldurma
+        const hastalikSelect = document.getElementById('hastalik');
         const ilSelect = document.getElementById('il');
         const ilceSelect = document.getElementById('ilce');
 
+        // Functions
+        function populateCins(kategoriId, selectedCinsId = null) {
+            cinsSelect.innerHTML = '<option value="">Tümü</option>';
+            if (cinsler[kategoriId]) {
+                cinsler[kategoriId].forEach(function(c) {
+                    const option = document.createElement('option');
+                    option.value = c.id;
+                    option.textContent = c.ad;
+                    if (selectedCinsId && selectedCinsId == c.id) {
+                        option.selected = true;
+                    }
+                    cinsSelect.appendChild(option);
+                });
+            }
+            // Reset hastalık when kategori changes
+            populateHastalik('', null);
+        }
+
+        function populateHastalik(cinsId, selectedHastalikId = null) {
+            hastalikSelect.innerHTML = '<option value="">Tümü</option>';
+            if (cinsId && hastaliklarCins[cinsId]) {
+                hastaliklarCins[cinsId].forEach(function(h) {
+                    const option = document.createElement('option');
+                    option.value = h.id;
+                    option.textContent = h.ad;
+                    if (selectedHastalikId && selectedHastalikId == h.id) {
+                        option.selected = true;
+                    }
+                    hastalikSelect.appendChild(option);
+                });
+            }
+        }
+
+        function populateIlce(ilId, selectedIlceId = null) {
+            ilceSelect.innerHTML = '<option value="">Tümü</option>';
+            if (ilceler[ilId]) {
+                ilceler[ilId].forEach(function(ilce) {
+                    const option = document.createElement('option');
+                    option.value = ilce.id;
+                    option.textContent = ilce.ad;
+                    if (selectedIlceId && selectedIlceId == ilce.id) {
+                        option.selected = true;
+                    }
+                    ilceSelect.appendChild(option);
+                });
+            }
+        }
+
+        // Event listeners
+        if (kategoriSelect && cinsSelect) {
+            kategoriSelect.addEventListener('change', function() {
+                const kategoriId = this.value;
+                populateCins(kategoriId);
+            });
+        }
+
+        if (cinsSelect && hastalikSelect) {
+            cinsSelect.addEventListener('change', function() {
+                const cinsId = this.value;
+                populateHastalik(cinsId);
+            });
+        }
+
         if (ilSelect && ilceSelect) {
             ilSelect.addEventListener('change', function() {
-                let val = this.value;
-                ilceSelect.innerHTML = '<option value="">Tümü</option>';
-                if (ilceler[val]) {
-                    ilceler[val].forEach(function(ilce) {
-                        const option = document.createElement('option');
-                        option.value = ilce.id;
-                        option.textContent = ilce.ad;
-                        ilceSelect.appendChild(option);
-                    });
-                }
+                const ilId = this.value;
+                populateIlce(ilId);
             });
         }
 
@@ -305,22 +349,22 @@ $user_id = $_SESSION['kullanici_id'] ?? null; // user_id veya kullanici_id'nizi 
             });
         });
 
-        // Sayfa yüklendiğinde mevcut filtrelere göre cins ve ilçe doldur
-        <?php if (!empty($_GET['kategori_id']) && isset($cinsler[$_GET['kategori_id']])): ?>
-            kategoriSelect.dispatchEvent(new Event('change'));
+        // Initialize dropdowns based on current GET parameters
+        <?php if (!empty($_GET['kategori_id'])): ?>
+            const initialKategoriId = '<?= (int)$_GET['kategori_id'] ?>';
+            populateCins(initialKategoriId, '<?= (int)($_GET['cins_id'] ?? 0) ?>');
+            
             <?php if (!empty($_GET['cins_id'])): ?>
                 setTimeout(function() {
-                    cinsSelect.value = '<?= (int)$_GET['cins_id'] ?>';
+                    const initialCinsId = '<?= (int)$_GET['cins_id'] ?>';
+                    populateHastalik(initialCinsId, '<?= (int)($_GET['hastalik_id'] ?? 0) ?>');
                 }, 100);
             <?php endif; ?>
         <?php endif; ?>
-        <?php if (!empty($_GET['il_id']) && isset($ilceler[$_GET['il_id']])): ?>
-            ilSelect.dispatchEvent(new Event('change'));
-            <?php if (!empty($_GET['ilce_id'])): ?>
-                setTimeout(function() {
-                    ilceSelect.value = '<?= (int)$_GET['ilce_id'] ?>';
-                }, 100);
-            <?php endif; ?>
+
+        <?php if (!empty($_GET['il_id'])): ?>
+            const initialIlId = '<?= (int)$_GET['il_id'] ?>';
+            populateIlce(initialIlId, '<?= (int)($_GET['ilce_id'] ?? 0) ?>');
         <?php endif; ?>
     });
 </script>

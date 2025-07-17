@@ -63,24 +63,56 @@ $result_aktif_ilanlar = $stmt_aktif_ilanlar->get_result();
 
 
 // --- Sahiplenenler (sahiplendi olanlar) Sorgusu ---
-$sql_sahiplenenler = "
-    SELECT
-        i.*,
-        c.ad AS cins_ad,
-        h.ad AS hastalik_ad,
-        k.ad AS kategori_ad,
-        il.ad AS il_ad,
-        ilce.ad AS ilce_ad
-    FROM ilanlar i
-    LEFT JOIN cinsler c ON i.cins_id = c.id
-    LEFT JOIN hastaliklar h ON i.hastalik_id = h.id
-    LEFT JOIN kategoriler k ON i.kategori_id = k.id
-    LEFT JOIN il il ON i.il_id = il.id
-    LEFT JOIN ilce ilce ON i.ilce_id = ilce.id
-    WHERE i.durum = 'sahiplenildi'
-    ORDER BY i.tarih DESC
-    LIMIT 20
-";
+// Önce sahiplenen_yorumu kolonunun var olup olmadığını kontrol et
+$columns_check = $conn->query("SHOW COLUMNS FROM sahiplenme_istekleri LIKE 'sahiplenen_yorumu'");
+$column_exists = $columns_check->num_rows > 0;
+
+if ($column_exists) {
+    $sql_sahiplenenler = "
+        SELECT
+            i.*,
+            c.ad AS cins_ad,
+            h.ad AS hastalik_ad,
+            k.ad AS kategori_ad,
+            il.ad AS il_ad,
+            ilce.ad AS ilce_ad,
+            si.sahiplenen_yorumu,
+            si.yorum_tarihi,
+            si.talep_eden_ad_soyad
+        FROM ilanlar i
+        LEFT JOIN cinsler c ON i.cins_id = c.id
+        LEFT JOIN hastaliklar h ON i.hastalik_id = h.id
+        LEFT JOIN kategoriler k ON i.kategori_id = k.id
+        LEFT JOIN il il ON i.il_id = il.id
+        LEFT JOIN ilce ilce ON i.ilce_id = ilce.id
+        LEFT JOIN sahiplenme_istekleri si ON i.id = si.ilan_id AND si.durum = 'tamamlandı'
+        WHERE i.durum = 'sahiplenildi'
+        ORDER BY i.tarih DESC
+        LIMIT 20
+    ";
+} else {
+    $sql_sahiplenenler = "
+        SELECT
+            i.*,
+            c.ad AS cins_ad,
+            h.ad AS hastalik_ad,
+            k.ad AS kategori_ad,
+            il.ad AS il_ad,
+            ilce.ad AS ilce_ad,
+            NULL AS sahiplenen_yorumu,
+            NULL AS yorum_tarihi,
+            NULL AS talep_eden_ad_soyad
+        FROM ilanlar i
+        LEFT JOIN cinsler c ON i.cins_id = c.id
+        LEFT JOIN hastaliklar h ON i.hastalik_id = h.id
+        LEFT JOIN kategoriler k ON i.kategori_id = k.id
+        LEFT JOIN il il ON i.il_id = il.id
+        LEFT JOIN ilce ilce ON i.ilce_id = ilce.id
+        WHERE i.durum = 'sahiplenildi'
+        ORDER BY i.tarih DESC
+        LIMIT 20
+    ";
+}
 $result_sahiplenenler = $conn->query($sql_sahiplenenler);
 ?>
 <!DOCTYPE html>
@@ -234,9 +266,14 @@ $result_sahiplenenler = $conn->query($sql_sahiplenenler);
             <?php if ($result_sahiplenenler && $result_sahiplenenler->num_rows > 0): ?>
                 <?php while ($ilan = $result_sahiplenenler->fetch_assoc()): ?>
                     <div class="bg-white rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition duration-300 border-t-4 border-toz-pembe">
-                        <img src="uploads/<?= htmlspecialchars($ilan['foto'] ?: 'placeholder.jpg') ?>" 
-                             alt="<?= htmlspecialchars($ilan['baslik']) ?>" 
-                             class="w-full h-48 object-cover">
+                        <div class="relative">
+                            <img src="uploads/<?= htmlspecialchars($ilan['foto'] ?: 'placeholder.jpg') ?>" 
+                                 alt="<?= htmlspecialchars($ilan['baslik']) ?>" 
+                                 class="w-full h-48 object-cover">
+                            <div class="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                                <i class="fas fa-heart mr-1"></i>Sahiplendi
+                            </div>
+                        </div>
                         <div class="p-6">
                             <h3 class="text-xl font-bold text-gray-800 mb-2"><?= htmlspecialchars($ilan['baslik']) ?></h3>
                             <div class="mb-4 text-sm text-gray-600">
@@ -256,6 +293,40 @@ $result_sahiplenenler = $conn->query($sql_sahiplenenler);
                                     </span>
                                 <?php endif; ?>
                             </div>
+                            
+                            <!-- Sahiplenen Yorumu -->
+                            <?php if ($column_exists && !empty($ilan['sahiplenen_yorumu'])): ?>
+                                <div class="mb-4 p-3 bg-green-50 rounded-lg border-l-4 border-green-500">
+                                    <p class="text-sm text-green-800 font-semibold mb-1">
+                                        <i class="fas fa-quote-left mr-1"></i>
+                                        <?= htmlspecialchars($ilan['talep_eden_ad_soyad']) ?> diyor ki:
+                                    </p>
+                                    <p class="text-sm text-green-700 italic">
+                                        "<?= htmlspecialchars(mb_substr($ilan['sahiplenen_yorumu'], 0, 100)) ?><?= strlen($ilan['sahiplenen_yorumu']) > 100 ? '...' : '' ?>"
+                                    </p>
+                                    <?php if (!empty($ilan['yorum_tarihi'])): ?>
+                                        <p class="text-xs text-green-600 mt-2">
+                                            <i class="fas fa-calendar mr-1"></i>
+                                            <?= date('d.m.Y', strtotime($ilan['yorum_tarihi'])) ?>
+                                        </p>
+                                    <?php endif; ?>
+                                </div>
+                            <?php elseif ($column_exists): ?>
+                                <div class="mb-4 p-3 bg-yellow-50 rounded-lg border-l-4 border-yellow-500">
+                                    <p class="text-sm text-yellow-700">
+                                        <i class="fas fa-hourglass-half mr-1"></i>
+                                        Yeni sahiplenen arkadaş henüz deneyimini paylaşmadı.
+                                    </p>
+                                </div>
+                            <?php else: ?>
+                                <div class="mb-4 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                                    <p class="text-sm text-blue-700">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        Yorum sistemi için veritabanı güncellemesi gerekiyor.
+                                    </p>
+                                </div>
+                            <?php endif; ?>
+                            
                             <a href="ilan_detay.php?id=<?= $ilan['id'] ?>" class="text-koyu-pembe hover:underline font-semibold flex items-center">
                                 Detayları Gör <i class="fas fa-arrow-right ml-2 text-sm"></i>
                             </a>

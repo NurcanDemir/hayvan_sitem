@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .success { color: green; }
+        .error { color: red; }
+        .button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Admin Panel Test - Sahiplenme Talepleri</h1>
+
+    <div class="test-section">
+        <h2>1. Database Connection Test</h2>
+        <div id="db-test">Testing...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Admin Authentication Test</h2>
+        <div id="auth-test">Testing...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Test Request Actions</h2>
+        <button class="button" onclick="testAction('onayla', 1)">Test Onayla</button>
+        <button class="button" onclick="testAction('reddet', 1)">Test Reddet</button>
+        <button class="button" onclick="testAction('tamamla', 1)">Test Tamamla</button>
+        <button class="button" onclick="testAction('not_ekle', 1)">Test Not Ekle</button>
+        <div id="action-results"></div>
+    </div>
+
+    <script>
+        // Test 1: Database Connection
+        fetch('simple_test.php')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('db-test').innerHTML = data;
+            })
+            .catch(error => {
+                document.getElementById('db-test').innerHTML = '<span class="error">Error: ' + error + '</span>';
+            });
+
+        // Test 2: Admin Authentication
+        // Set admin session manually for testing
+        fetch('test_admin_request.php')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('auth-test').innerHTML = '<span class="success">Admin session test completed</span>';
+            })
+            .catch(error => {
+                document.getElementById('auth-test').innerHTML = '<span class="error">Error: ' + error + '</span>';
+            });
+
+        // Test 3: Action Functions
+        function testAction(action, talepId) {
+            let formData = new FormData();
+            formData.append('talep_id', talepId);
+            formData.append('action', action === 'not_ekle' ? 'admin_note' : action);
+            
+            if (action === 'not_ekle') {
+                formData.append('admin_note', 'Test admin note');
+            }
+
+            fetch('admin/debug_admin_status.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('action-results');
+                resultDiv.innerHTML += '<div><strong>' + action + '</strong>: ' + 
+                    (data.status === 'success' ? '<span class="success">' : '<span class="error">') + 
+                    data.message + '</span></div>';
+                    
+                if (data.debug) {
+                    resultDiv.innerHTML += '<div>Debug info: ' + JSON.stringify(data.debug) + '</div>';
+                }
+            })
+            .catch(error => {
+                document.getElementById('action-results').innerHTML += '<div><strong>' + action + '</strong>: <span class="error">Error: ' + error + '</span></div>';
+            });
+        }
+
+        // Initialize test data
+        fetch('init_test_data.php')
+            .then(response => response.text())
+            .then(data => {
+                console.log('Test data initialized:', data);
+            });
+    </script>
+</body>
+</html>

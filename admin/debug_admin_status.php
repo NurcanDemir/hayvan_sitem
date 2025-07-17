@@ -1,16 +1,30 @@
 <?php
+// debug_admin_status.php - Debug admin status updates
 session_start();
 include("../includes/db.php");
-include("../includes/auth.php"); // Yetkilendirme kontrolü için auth.php
 
-header('Content-Type: application/json'); // JSON yanıt döndüreceğiz
+// Enable error reporting
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Log all requests
+$log_data = [
+    'timestamp' => date('Y-m-d H:i:s'),
+    'method' => $_SERVER['REQUEST_METHOD'],
+    'session' => $_SESSION,
+    'post' => $_POST,
+    'get' => $_GET
+];
+
+file_put_contents('debug_log.txt', json_encode($log_data) . "\n", FILE_APPEND);
+
+header('Content-Type: application/json');
 
 $response = ['status' => 'error', 'message' => 'Bir hata oluştu.'];
 
-// Admin yetkisi kontrolü (auth.php'de bu fonksiyonun olduğunu varsayıyoruz)
-// Eğer admin değilse işlemi durdur
-if (!function_exists('isAdmin') || !isAdmin()) {
-    $response['message'] = "Bu işlemi yapmaya yetkiniz yok.";
+// Check if admin is logged in
+if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    $response['message'] = "Admin yetkisi gerekli. Session: " . print_r($_SESSION, true);
     echo json_encode($response);
     exit;
 }
@@ -19,18 +33,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $talep_id = filter_input(INPUT_POST, 'talep_id', FILTER_VALIDATE_INT);
     $action = filter_input(INPUT_POST, 'action', FILTER_SANITIZE_STRING);
 
+    $response['debug'] = [
+        'talep_id' => $talep_id,
+        'action' => $action,
+        'raw_post' => $_POST
+    ];
+
     if (!$talep_id || empty($action)) {
-        $response['message'] = "Geçersiz talep ID'si veya işlem.";
+        $response['message'] = "Geçersiz talep ID'si veya işlem. ID: $talep_id, Action: $action";
         echo json_encode($response);
         exit;
     }
 
-    $new_status = '';
-    $admin_note_content = null;
+    // Check if request exists
+    $stmt_check = $conn->prepare("SELECT id, durum FROM sahiplenme_istekleri WHERE id = ?");
+    $stmt_check->bind_param("i", $talep_id);
+    $stmt_check->execute();
+    $result_check = $stmt_check->get_result();
+    
+    if ($result_check->num_rows == 0) {
+        $response['message'] = "Talep bulunamadı. ID: $talep_id";
+        echo json_encode($response);
+        exit;
+    }
+
+    $current_data = $result_check->fetch_assoc();
+    $stmt_check->close();
+
+    $response['current_data'] = $current_data;
 
     if ($action === 'admin_note') {
         $admin_note_content = filter_input(INPUT_POST, 'admin_note', FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
-        // Eğer not boş gönderilirse NULL yap
         if (empty($admin_note_content)) {
             $admin_note_content = null; 
         }
@@ -57,16 +90,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         ];
         
         if (!isset($action_map[$action])) {
-            $response['message'] = "Geçersiz durum değeri.";
+            $response['message'] = "Geçersiz durum değeri. Action: $action, Allowed: " . implode(', ', array_keys($action_map));
             echo json_encode($response);
             exit;
         }
         $new_status = $action_map[$action];
 
-        $conn->begin_transaction(); // İşlem başlat
+        $conn->begin_transaction();
 
         try {
-            // Sahiplenme talebinin durumunu güncelle
             $stmt_update = $conn->prepare("UPDATE sahiplenme_istekleri SET durum = ? WHERE id = ?");
             if (!$stmt_update) {
                 throw new Exception("Durum güncelleme sorgusu hazırlama hatası: " . $conn->error);
@@ -77,7 +109,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
             $stmt_update->close();
 
-            // Eğer talep onaylandıysa veya tamamlandıysa, ilanı da güncelle
             if ($new_status === 'onaylandı' || $new_status === 'tamamlandı') {
                 $stmt_ilan_id = $conn->prepare("SELECT ilan_id FROM sahiplenme_istekleri WHERE id = ?");
                 if (!$stmt_ilan_id) {
@@ -90,7 +121,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $ilan_id = $ilan_row['ilan_id'];
                 $stmt_ilan_id->close();
 
-                // İlanın durumunu 'sahiplenildi' olarak güncelle
                 $stmt_update_ilan = $conn->prepare("UPDATE ilanlar SET durum = 'sahiplenildi' WHERE id = ?");
                 if (!$stmt_update_ilan) {
                     throw new Exception("İlan durumu güncelleme sorgusu hazırlama hatası: " . $conn->error);
@@ -102,18 +132,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $stmt_update_ilan->close();
             }
 
-            $conn->commit(); // İşlemi onayla
+            $conn->commit();
             $response['status'] = 'success';
             $response['message'] = "Talep durumu başarıyla '$new_status' olarak güncellendi.";
 
         } catch (Exception $e) {
-            $conn->rollback(); // Hata durumunda işlemi geri al
+            $conn->rollback();
             $response['message'] = $e->getMessage();
         }
     }
 
 } else {
-    $response['message'] = "Geçersiz istek metodu.";
+    $response['message'] = "Geçersiz istek metodu. Method: " . $_SERVER['REQUEST_METHOD'];
 }
 
 echo json_encode($response);
