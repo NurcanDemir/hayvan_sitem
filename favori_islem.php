@@ -1,12 +1,15 @@
 <?php
-session_start();
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+
 header('Content-Type: application/json');
 
 // Kullanıcı giriş kontrolü
 if (!isset($_SESSION['kullanici_id'])) {
     echo json_encode([
         'status' => 'error',
-        'message' => 'Bu işlem için giriş yapmanız gerekiyor.',
+        'message' => 'Giriş yapmanız gerekiyor!',
         'redirect' => 'giris.php'
     ]);
     exit;
@@ -14,99 +17,92 @@ if (!isset($_SESSION['kullanici_id'])) {
 
 include("includes/db.php");
 
-$kullanici_id = intval($_SESSION['kullanici_id']);
-$ilan_id = intval($_POST['ilan_id'] ?? 0);
-$action = $_POST['action'] ?? '';
+$kullanici_id = $_SESSION['kullanici_id'];
+$ilan_id = (int)$_POST['ilan_id'];
+$action = $_POST['action'];
 
-if ($ilan_id <= 0) {
+if (!$ilan_id) {
     echo json_encode([
         'status' => 'error',
-        'message' => 'Geçersiz ilan ID\'si.'
+        'message' => 'Geçersiz ilan ID!'
     ]);
     exit;
 }
 
-// İlanın varlığını kontrol et
-$check_ilan = $conn->prepare("SELECT id FROM ilanlar WHERE id = ? AND durum = 'Aktif'");
-$check_ilan->bind_param("i", $ilan_id);
-$check_ilan->execute();
-$ilan_result = $check_ilan->get_result();
+// İlan var mı kontrol et
+$ilan_check = $conn->prepare("SELECT id FROM ilanlar WHERE id = ?");
+$ilan_check->bind_param("i", $ilan_id);
+$ilan_check->execute();
+$ilan_result = $ilan_check->get_result();
 
-if ($ilan_result->num_rows == 0) {
+if ($ilan_result->num_rows === 0) {
     echo json_encode([
         'status' => 'error',
-        'message' => 'İlan bulunamadı veya aktif değil.'
+        'message' => 'İlan bulunamadı!'
     ]);
     exit;
 }
+$ilan_check->close();
 
-if ($action === 'add') {
-    // Favorilere ekleme
-    
-    // Önce zaten favorilerde olup olmadığını kontrol et
-    $check_stmt = $conn->prepare("SELECT id FROM favoriler WHERE kullanici_id = ? AND ilan_id = ?");
-    $check_stmt->bind_param("ii", $kullanici_id, $ilan_id);
-    $check_stmt->execute();
-    $check_result = $check_stmt->get_result();
-    
-    if ($check_result->num_rows > 0) {
-        echo json_encode([
-            'status' => 'error',
-            'message' => 'Bu ilan zaten favorilerinizde.'
-        ]);
-    } else {
-        // Favorilere ekle
-        $insert_stmt = $conn->prepare("INSERT INTO favoriler (kullanici_id, ilan_id) VALUES (?, ?)");
-        $insert_stmt->bind_param("ii", $kullanici_id, $ilan_id);
+try {
+    if ($action === 'add') {
+        // Önce mevcut favoriler tablosunun yapısını kontrol edelim
+        // Favoriye ekle - tarih sütunu olmadan
+        $stmt = $conn->prepare("INSERT IGNORE INTO favoriler (kullanici_id, ilan_id) VALUES (?, ?)");
+        $stmt->bind_param("ii", $kullanici_id, $ilan_id);
         
-        if ($insert_stmt->execute()) {
-            echo json_encode([
-                'status' => 'success',
-                'message' => 'İlan favorilerinize eklendi.'
-            ]);
+        if ($stmt->execute()) {
+            if ($stmt->affected_rows > 0) {
+                echo json_encode([
+                    'status' => 'success',
+                    'message' => 'Favorilere eklendi! 💖'
+                ]);
+            } else {
+                echo json_encode([
+                    'status' => 'info',
+                    'message' => 'Bu ilan zaten favorilerinizde! 💫'
+                ]);
+            }
         } else {
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Favorilere eklenirken bir hata oluştu.'
-            ]);
+            throw new Exception("Veritabanı hatası: " . $stmt->error);
         }
-        $insert_stmt->close();
-    }
-    $check_stmt->close();
-    
-} elseif ($action === 'remove') {
-    // Favorilerden çıkarma
-    
-    $delete_stmt = $conn->prepare("DELETE FROM favoriler WHERE kullanici_id = ? AND ilan_id = ?");
-    $delete_stmt->bind_param("ii", $kullanici_id, $ilan_id);
-    
-    if ($delete_stmt->execute()) {
-        if ($delete_stmt->affected_rows > 0) {
-            echo json_encode([
-                'status' => 'success',
-                'message' => 'İlan favorilerinizden çıkarıldı.'
-            ]);
+        $stmt->close();
+        
+    } elseif ($action === 'remove') {
+        // Favoriden kaldır
+        $stmt = $conn->prepare("DELETE FROM favoriler WHERE kullanici_id = ? AND ilan_id = ?");
+        $stmt->bind_param("ii", $kullanici_id, $ilan_id);
+        
+        if ($stmt->execute()) {
+            if ($stmt->affected_rows > 0) {
+                echo json_encode([
+                    'status' => 'success',
+                    'message' => 'Favorilerden kaldırıldı! 💔'
+                ]);
+            } else {
+                echo json_encode([
+                    'status' => 'info',
+                    'message' => 'Bu ilan zaten favorilerinizde değil! 🤷‍♀️'
+                ]);
+            }
         } else {
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Bu ilan zaten favorilerinizde değil.'
-            ]);
+            throw new Exception("Veritabanı hatası: " . $stmt->error);
         }
+        $stmt->close();
+        
     } else {
         echo json_encode([
             'status' => 'error',
-            'message' => 'Favorilerden çıkarılırken bir hata oluştu.'
+            'message' => 'Geçersiz işlem!'
         ]);
     }
-    $delete_stmt->close();
     
-} else {
+} catch (Exception $e) {
     echo json_encode([
         'status' => 'error',
-        'message' => 'Geçersiz işlem.'
+        'message' => 'Bir hata oluştu: ' . $e->getMessage()
     ]);
 }
 
-$check_ilan->close();
 $conn->close();
 ?>

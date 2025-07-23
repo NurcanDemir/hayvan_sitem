@@ -73,38 +73,180 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <?php include("includes/header.php"); ?>
 
-<div class="container mx-auto px-4 py-8 mt-16 md:mt-24 flex-grow">
-    <div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-xl">
-        <h1 class="text-3xl font-extrabold text-center text-koyu-pembe mb-6">Kayıt Ol</h1>
-
-        <?php if (!empty($mesaj)): ?>
-            <div class="p-4 mb-6 rounded-lg text-white font-medium
-                <?php
-                    if ($mesaj_tur === "success") echo "bg-acik-yesil text-koyu-yesil";
-                    elseif ($mesaj_tur === "danger") echo "bg-red-500";
-                    elseif ($mesaj_tur === "warning") echo "bg-yellow-500";
-                ?>">
-                <?= $mesaj ?>
+<div class="bg-gray-50 min-h-screen pt-8">
+    <div class="container mx-auto px-4">
+        <!-- Başlık Bölümü -->
+        <div class="bg-white shadow-sm border-b">
+            <div class="max-w-7xl mx-auto py-12 px-6">
+                <h1 class="text-5xl font-extrabold text-amber-700 mb-4">
+                    <i class="fas fa-user-plus mr-4"></i>Kayıt Ol
+                </h1>
+                <p class="text-2xl text-gray-600">Yuvanın Anahtarı ailesine katılın ve hayvan sevgisi dünyasına adım atın!</p>
             </div>
-        <?php endif; ?>
+        </div>
 
-        <form method="POST" action="kayit.php" class="space-y-6">
-            <div>
-                <label for="kullanici_adi" class="block text-gray-700 text-sm font-semibold mb-2">Kullanıcı Adı:</label>
-                <input type="text" name="kullanici_adi" id="kullanici_adi" class="form-input-tailwind" required placeholder="Kullanıcı Adınız">
-            </div>
-            <div>
-                <label for="sifre" class="block text-gray-700 text-sm font-semibold mb-2">Şifre:</label>
-                <input type="password" name="sifre" id="sifre" class="form-input-tailwind" required placeholder="Şifreniz">
-            </div>
-            <button type="submit" class="w-full bg-koyu-pembe hover:bg-pink-700 text-white font-bold py-3 px-4 rounded-md transition duration-300 flex items-center justify-center">
-                <i class="fas fa-user-plus mr-2"></i> Kayıt Ol
-            </button>
-        </form>
+        <!-- Ana İçerik Bölümü -->
+        <div class="max-w-7xl mx-auto py-12 px-6">
+            <?php if (!empty($mesaj)): ?>
+                <div class="mb-8 p-6 rounded-lg text-white font-medium text-lg
+                    <?php
+                        if ($mesaj_tur === "success") echo "bg-green-500";
+                        elseif ($mesaj_tur === "danger") echo "bg-red-500";
+                        elseif ($mesaj_tur === "warning") echo "bg-yellow-500";
+                    ?>">
+                    <?= $mesaj ?>
+                </div>
+            <?php endif; ?>
 
-        <p class="text-center text-sm text-gray-600 mt-6">
-            Zaten hesabınız var mı? <a href="giris.php" class="text-koyu-pembe hover:underline font-semibold">Giriş Yap</a>
-        </p>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                <!-- Kayıt Formu - Sol taraf -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-xl shadow-lg p-8">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-8 border-b pb-4">
+                            <i class="fas fa-edit mr-3 text-amber-600"></i>Yeni Hesap Oluştur
+                        </h2>
+                        
+                        <form method="POST" action="kayit.php" class="space-y-8">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="md:col-span-2">
+                                    <label for="kullanici_adi" class="block text-gray-700 text-lg font-semibold mb-3">
+                                        <i class="fas fa-user mr-2 text-amber-600"></i>Kullanıcı Adı
+                                    </label>
+                                    <input type="text" name="kullanici_adi" id="kullanici_adi" 
+                                           class="w-full px-6 py-4 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-3 focus:ring-amber-400 focus:border-transparent transition duration-300" 
+                                           required placeholder="Benzersiz kullanıcı adınızı seçin">
+                                    <p class="text-sm text-gray-500 mt-2">Bu ad ile tanınacaksınız ve giriş yapacaksınız.</p>
+                                </div>
+                                
+                                <div class="md:col-span-2">
+                                    <label for="sifre" class="block text-gray-700 text-lg font-semibold mb-3">
+                                        <i class="fas fa-lock mr-2 text-amber-600"></i>Şifre
+                                    </label>
+                                    <input type="password" name="sifre" id="sifre" 
+                                           class="w-full px-6 py-4 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-3 focus:ring-amber-400 focus:border-transparent transition duration-300" 
+                                           required placeholder="Güvenli bir şifre oluşturun">
+                                    <p class="text-sm text-gray-500 mt-2">En az 6 karakter kullanmanızı öneririz.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="pt-6 border-t">
+                                <button type="submit" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-bold py-4 px-8 rounded-lg transition duration-300 shadow-lg text-xl">
+                                    <i class="fas fa-user-plus mr-3"></i>Hesabımı Oluştur
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="mt-8 pt-6 border-t text-center">
+                            <p class="text-lg text-gray-600">
+                                Zaten hesabınız var mı? 
+                                <a href="giris.php" class="text-amber-600 hover:text-amber-700 font-semibold hover:underline text-xl">
+                                    <i class="fas fa-sign-in-alt mr-2"></i>Hemen Giriş Yapın
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bilgi Bölümü - Sağ taraf -->
+                <div class="space-y-8">
+                    <!-- Üyelik Avantajları -->
+                    <div class="bg-white rounded-xl shadow-lg p-8">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-3">
+                            <i class="fas fa-star mr-3 text-amber-600"></i>Üyelik Avantajları
+                        </h3>
+                        <div class="space-y-6">
+                            <div class="flex items-start">
+                                <div class="bg-amber-100 p-3 rounded-full mr-4">
+                                    <i class="fas fa-heart text-amber-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-800 text-lg">İlan Yayınlayın</h4>
+                                    <p class="text-gray-600">Sahiplendirmek istediğiniz hayvanlar için ücretsiz ilan verin</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="bg-emerald-100 p-3 rounded-full mr-4">
+                                    <i class="fas fa-bookmark text-emerald-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-800 text-lg">Favoriler</h4>
+                                    <p class="text-gray-600">Beğendiğiniz ilanları kaydedin ve takip edin</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="bg-stone-100 p-3 rounded-full mr-4">
+                                    <i class="fas fa-handshake text-stone-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-800 text-lg">Sahiplenme Talepleri</h4>
+                                    <p class="text-gray-600">Hayvan sahiplenmek için güvenle talepte bulunun</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="bg-amber-100 p-3 rounded-full mr-4">
+                                    <i class="fas fa-shield-alt text-amber-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-800 text-lg">Güvenli Platform</h4>
+                                    <p class="text-gray-600">Doğrulanmış üyeler, güvenilir sahiplendirme</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- İstatistikler -->
+                    <div class="bg-gradient-to-br from-amber-50 to-stone-50 rounded-xl shadow-lg p-8">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-6">
+                            <i class="fas fa-chart-line mr-3 text-emerald-600"></i>Başarı Hikayelerimiz
+                        </h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="text-center p-4 bg-white rounded-lg">
+                                <div class="text-3xl font-bold text-amber-600">500+</div>
+                                <div class="text-sm text-gray-600">Mutlu Sahiplendirme</div>
+                            </div>
+                            <div class="text-center p-4 bg-white rounded-lg">
+                                <div class="text-3xl font-bold text-emerald-600">1200+</div>
+                                <div class="text-sm text-gray-600">Aktif Üye</div>
+                            </div>
+                            <div class="text-center p-4 bg-white rounded-lg">
+                                <div class="text-3xl font-bold text-stone-600">50+</div>
+                                <div class="text-sm text-gray-600">Günlük İlan</div>
+                            </div>
+                            <div class="text-center p-4 bg-white rounded-lg">
+                                <div class="text-3xl font-bold text-amber-700">99%</div>
+                                <div class="text-sm text-gray-600">Memnuniyet</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Motivasyon Mesajı -->
+                    <div class="bg-white rounded-xl shadow-lg p-8 border-l-4 border-amber-600">
+                        <blockquote class="text-lg text-gray-700 italic">
+                            <i class="fas fa-quote-left text-2xl text-amber-600 mr-3"></i>
+                            "Her kayıt, yeni bir dostluğun başlangıcıdır. Hayvan sevgisi burada birleşiyor!"
+                        </blockquote>
+                        <div class="mt-4 text-right">
+                            <span class="text-sm text-gray-500">- Yuvanın Anahtarı Ekibi</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alt Bilgi -->
+            <div class="mt-16 text-center py-8 border-t border-gray-200">
+                <p class="text-gray-500 text-lg">
+                    Kayıt olarak 
+                    <a href="#" class="text-amber-600 hover:underline font-semibold">kullanım şartlarını</a> ve 
+                    <a href="#" class="text-amber-600 hover:underline font-semibold">gizlilik politikasını</a> kabul etmiş olursunuz.
+                </p>
+                <p class="text-gray-400 text-sm mt-2">
+                    Sorularınız için: <strong>info@yuvaninanahtari.com</strong>
+                </p>
+            </div>
+        </div>
     </div>
 </div>
 
