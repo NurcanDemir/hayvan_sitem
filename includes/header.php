@@ -1,6 +1,6 @@
 <?php
 // header.php
-// Oturum henüz başlatılmadıysa başlat (İlanlarim.php'de başlatılıyor ama güvenlik için burada da kontrol edilebilir)
+// Oturum henüz başlatılmadıysa başlat
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
@@ -14,7 +14,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= isset($page_title) ? $page_title : 'Hayvan Dostları' ?></title>
+    <title><?= isset($page_title) ? $page_title : 'Yuva Ol - Hayvan Dostları Platformu' ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
@@ -79,6 +79,14 @@ $current_page = basename($_SERVER['PHP_SELF']);
         .nav-link:hover {
             color: var(--primary);
         }
+
+        .logo-text {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 2px 4px rgba(186, 54, 137, 0.2);
+        }
     </style>
 </head>
 <body>
@@ -87,10 +95,16 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <nav class="max-w-7xl mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-4">
-                    <div class="text-3xl">🐾</div>
-                    <h1 class="text-2xl font-bold text-primary">
-                        <a href="index.php" class="hover:text-primary-light transition-colors">Hayvan Dostları</a>
-                    </h1>
+                    <!-- Logo ve Site Adı -->
+                    <div class="flex items-center space-x-3">
+                        <div class="text-3xl">🏠</div>
+                        <div class="flex flex-col">
+                            <h1 class="text-2xl font-bold logo-text">
+                                <a href="index.php" class="hover:opacity-80 transition-opacity">Yuva Ol</a>
+                            </h1>
+                            <span class="text-xs text-gray-500 -mt-1">Onlar İçin Yuva, Senin İçin Dostluk.</span>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Desktop Menu -->
@@ -100,7 +114,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
                         <i class="fas fa-home mr-1"></i>Ana Sayfa
                     </a>
                     <a href="barinaklar.php" class="nav-link <?= ($current_page == 'barinaklar.php') ? 'active' : 'text-stone-600' ?>">
-                        <i class="fas fa-home mr-1"></i>Barınaklar
+                        <i class="fas fa-building mr-1"></i>Barınaklar
                     </a>
                     <a href="etkinlikler.php" class="nav-link <?= ($current_page == 'etkinlikler.php') ? 'active' : 'text-stone-600' ?>">
                         <i class="fas fa-calendar-alt mr-1"></i>Etkinlikler
@@ -128,9 +142,25 @@ $current_page = basename($_SERVER['PHP_SELF']);
                         <a href="gelen_talepler.php" class="nav-link <?= ($current_page == 'gelen_talepler.php') ? 'active' : 'text-stone-600' ?>">
                             <i class="fas fa-inbox mr-1"></i>Gelen Talepler
                             <?php
-                            // Okunmamış talep sayısını göster
-                            include_once("includes/db.php");
-                            $unread_count = $conn->query("SELECT COUNT(*) as count FROM sahiplendirme_talepleri WHERE ilan_sahibi_id = {$_SESSION['kullanici_id']} AND okundu = 0")->fetch_assoc()['count'] ?? 0;
+                            // Okunmamış talep sayısını güvenli şekilde göster
+                            $unread_count = 0;
+                            try {
+                                if (file_exists("includes/db.php")) {
+                                    include_once("includes/db.php");
+                                } elseif (file_exists("db.php")) {
+                                    include_once("db.php");
+                                }
+                                
+                                if (isset($conn) && $conn) {
+                                    $unread_result = $conn->query("SELECT COUNT(*) as count FROM sahiplenme_istekleri WHERE ilan_sahibi_kullanici_id = {$_SESSION['kullanici_id']} AND durum = 'Yeni'");
+                                    if ($unread_result) {
+                                        $unread_count = $unread_result->fetch_assoc()['count'] ?? 0;
+                                    }
+                                }
+                            } catch (Exception $e) {
+                                $unread_count = 0;
+                            }
+                            
                             if ($unread_count > 0): ?>
                                 <span class="bg-red-500 text-white text-xs rounded-full px-2 py-1 ml-1"><?= $unread_count ?></span>
                             <?php endif; ?>
@@ -171,7 +201,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
                         <i class="fas fa-home mr-2"></i>Ana Sayfa
                     </a>
                     <a href="barinaklar.php" class="nav-link <?= ($current_page == 'barinaklar.php') ? 'active' : 'text-stone-600' ?> py-2">
-                        <i class="fas fa-home mr-2"></i>Barınaklar
+                        <i class="fas fa-building mr-2"></i>Barınaklar
                     </a>
                     <a href="etkinlikler.php" class="nav-link <?= ($current_page == 'etkinlikler.php') ? 'active' : 'text-stone-600' ?> py-2">
                         <i class="fas fa-calendar-alt mr-2"></i>Etkinlikler
@@ -235,3 +265,95 @@ $current_page = basename($_SERVER['PHP_SELF']);
             }
         });
     </script>
+
+    <?php
+    // filepath: c:\xampp\htdocs\hayvan_sitem\includes\layout_with_sidebar.php
+    // Layout wrapper for index page with sidebar
+
+    // Barınakları getir
+    $barınak_sql = "SELECT DISTINCT b.*, s.ad as sehir_adi 
+                    FROM barinaklar b 
+                    LEFT JOIN sehirler s ON b.sehir_id = s.id 
+                    ORDER BY s.ad ASC LIMIT 10";
+    $barinaklar_result = $conn->query($barınak_sql);
+    ?>
+
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        <div class="flex gap-8">
+            <!-- Sol Sidebar - Barınaklar -->
+            <aside class="w-80 bg-white rounded-xl shadow-lg p-6 h-fit sticky top-24">
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-building mr-2 text-primary"></i>
+                        Yakındaki Barınaklar
+                    </h2>
+                    <p class="text-sm text-gray-600 mb-4">Size en yakın barınakları keşfedin</p>
+                </div>
+
+                <!-- Şehir Seçici -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Şehir Seçin:</label>
+                    <select id="sehirFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+                        <option value="">Tüm Şehirler</option>
+                        <?php
+                        $sehir_sql = "SELECT DISTINCT s.* FROM sehirler s 
+                                      INNER JOIN barinaklar b ON s.id = b.sehir_id 
+                                      ORDER BY s.ad ASC";
+                        $sehirler_result = $conn->query($sehir_sql);
+                        while ($sehir = $sehirler_result->fetch_assoc()): ?>
+                            <option value="<?= $sehir['id'] ?>"><?= htmlspecialchars($sehir['ad']) ?></option>
+                        <?php endwhile; ?>
+                    </select>
+                </div>
+
+                <!-- Barınaklar Listesi -->
+                <div id="barinaklarListesi" class="space-y-3 max-h-96 overflow-y-auto">
+                    <?php if ($barinaklar_result && $barinaklar_result->num_rows > 0): ?>
+                        <?php while ($barinak = $barinaklar_result->fetch_assoc()): ?>
+                            <div class="barinak-item border border-gray-200 rounded-lg p-3 hover:border-primary transition-colors" data-sehir="<?= $barinak['sehir_id'] ?>">
+                                <div class="flex items-start space-x-3">
+                                    <div class="text-2xl">🏢</div>
+                                    <div class="flex-1">
+                                        <h3 class="font-semibold text-gray-800 text-sm">
+                                            <?= htmlspecialchars($barinak['ad']) ?>
+                                        </h3>
+                                        <p class="text-xs text-gray-600 flex items-center mt-1">
+                                            <i class="fas fa-map-marker-alt mr-1"></i>
+                                            <?= htmlspecialchars($barinak['sehir_adi']) ?>
+                                        </p>
+                                        <?php if ($barinak['telefon']): ?>
+                                            <p class="text-xs text-gray-600 flex items-center mt-1">
+                                                <i class="fas fa-phone mr-1"></i>
+                                                <a href="tel:<?= htmlspecialchars($barinak['telefon']) ?>" 
+                                                   class="text-primary hover:underline">
+                                                    <?= htmlspecialchars($barinak['telefon']) ?>
+                                                </a>
+                                            </p>
+                                        <?php endif; ?>
+                                        <?php if ($barinak['adres']): ?>
+                                            <p class="text-xs text-gray-500 mt-1 line-clamp-2">
+                                                <?= htmlspecialchars(substr($barinak['adres'], 0, 50)) ?>...
+                                            </p>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fas fa-building text-3xl mb-2"></i>
+                            <p>Henüz barınak bulunmuyor</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Tüm Barınakları Görüntüle -->
+                <div class="mt-4 pt-4 border-t">
+                    <a href="barinaklar.php" class="btn-gradient text-white px-4 py-2 rounded-md text-sm font-semibold w-full text-center block">
+                        <i class="fas fa-eye mr-2"></i>Tüm Barınakları Görüntüle
+                    </a>
+                </div>
+            </aside>
+
+            <!-- Ana İçerik Alanı -->
+            <main class="flex-1">

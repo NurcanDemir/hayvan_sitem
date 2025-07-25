@@ -162,6 +162,17 @@ if (isset($_SESSION['hata_mesaj'])) {
     </div>
 </div>
 
+<!-- Footer -->
+<footer class="bg-gray-800 text-white py-12 mt-16">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center">
+            <div class="text-3xl mb-4">🏠</div>
+            <h3 class="text-2xl font-bold mb-4 text-primary-lighter">Yuva Ol</h3>
+            <p class="text-gray-400">Sevgiyle Sahiplen</p>
+        </div>
+    </div>
+</footer>
+
 <?php include("includes/footer.php"); ?>
 </body>
 </html>
