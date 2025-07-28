@@ -1,0 +1,16 @@
+{
+    "name": "hayvan-sitem/email-system",
+    "description": "Email notification system for animal adoption events",
+    "type": "project",
+    "require": {
+        "phpmailer/phpmailer": "^6.8"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "nurcan",
+            "email": "nurcanss.demirr1907@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable"
+}

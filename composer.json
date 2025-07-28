@@ -1,0 +1,11 @@
+{
+    "name": "nurcan/hayvan_site",
+    "description": "test",
+    "authors": [
+        {
+            "name": "NurcanDemir",
+            "email": "nurcanss.demirr1907@gmail.com"
+        }
+    ],
+    "require": {}
+}
