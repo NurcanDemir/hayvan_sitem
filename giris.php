@@ -139,6 +139,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
 
+                <!-- Forgot Password Link -->
+                <div class="text-right">
+                    <a href="forgot_password.php" class="text-sm text-purple-600 hover:text-purple-800 hover:underline">
+                        <i class="fas fa-question-circle mr-1"></i>Şifremi unuttum
+                    </a>
+                </div>
+
                 <!-- Submit Button -->
                 <button 
                     type="submit" 

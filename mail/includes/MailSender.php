@@ -67,6 +67,36 @@ class MailSender {
         }
     }
     
+    public function sendPasswordResetEmail($to_email, $username, $reset_token) {
+        try {
+            $reset_link = MailConfig::SITE_URL . "/reset_password.php?token=" . $reset_token;
+            
+            $this->mailer->addAddress($to_email, $username);
+            $this->mailer->isHTML(true);
+            $this->mailer->Subject = MailConfig::SITE_NAME . ' - Şifre Sıfırlama';
+            
+            $html_body = $this->getPasswordResetEmailTemplate($username, $reset_link);
+            $this->mailer->Body = $html_body;
+            
+            // Text version
+            $this->mailer->AltBody = "Merhaba $username,\n\n" .
+                "Şifrenizi sıfırlamak için bu linke tıklayın:\n" .
+                $reset_link . "\n\n" .
+                "Bu link 1 saat geçerlidir.\n" .
+                "Eğer bu talebi siz yapmadıysanız, bu emaili görmezden gelin.\n\n" .
+                MailConfig::SITE_NAME . " Ekibi";
+            
+            $result = $this->mailer->send();
+            $this->mailer->clearAddresses();
+            
+            return ['success' => true, 'message' => 'Şifre sıfırlama emaili gönderildi'];
+            
+        } catch (Exception $e) {
+            error_log("Password Reset Email Error: " . $e->getMessage());
+            return ['success' => false, 'message' => 'Email gönderilemedi: ' . $e->getMessage()];
+        }
+    }
+    
     private function getVerificationEmailTemplate($username, $verification_link) {
         return "
         <!DOCTYPE html>
@@ -123,6 +153,79 @@ class MailSender {
                 <div class='footer'>
                     <p>Bu email otomatik olarak gönderilmiştir.</p>
                     <p><strong>" . MailConfig::SITE_NAME . "</strong> - Hayvanlar için bir yuva</p>
+                </div>
+            </div>
+        </body>
+        </html>";
+    }
+    
+    private function getPasswordResetEmailTemplate($username, $reset_link) {
+        return "
+        <!DOCTYPE html>
+        <html lang='tr'>
+        <head>
+            <meta charset='UTF-8'>
+            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+            <title>Şifre Sıfırlama</title>
+            <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: linear-gradient(135deg, #dc2626, #991b1b); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px; }
+                .btn { display: inline-block; background: #dc2626; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }
+                .btn:hover { background: #991b1b; }
+                .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+                .warning { background: #fef2f2; border: 1px solid #fecaca; padding: 15px; border-radius: 5px; margin: 20px 0; }
+                .security-note { background: #fff7ed; border: 1px solid #fed7aa; padding: 15px; border-radius: 5px; margin: 20px 0; }
+            </style>
+        </head>
+        <body>
+            <div class='container'>
+                <div class='header'>
+                    <h1>🔐 " . MailConfig::SITE_NAME . "</h1>
+                    <p>Şifre Sıfırlama Talebi</p>
+                </div>
+                <div class='content'>
+                    <h2>Merhaba $username!</h2>
+                    <p>Hesabınız için şifre sıfırlama talebinde bulunuldu. Şifrenizi sıfırlamak için aşağıdaki butona tıklayın:</p>
+                    
+                    <div style='text-align: center;'>
+                        <a href='$reset_link' class='btn'>🔑 Şifremi Sıfırla</a>
+                    </div>
+                    
+                    <div class='warning'>
+                        <strong>⚠️ GÜVENLİK UYARISI:</strong>
+                        <ul>
+                            <li>Bu link yalnızca 1 saat geçerlidir</li>
+                            <li>Link yalnızca bir kez kullanılabilir</li>
+                            <li>Eğer bu talebi siz yapmadıysanız, bu emaili görmezden gelin</li>
+                            <li>Şüpheli bir durum varsa hemen bizimle iletişime geçin</li>
+                        </ul>
+                    </div>
+                    
+                    <div class='security-note'>
+                        <strong>🛡️ Güvenlik İpuçları:</strong>
+                        <ul>
+                            <li>Güçlü bir şifre seçin (en az 6 karakter)</li>
+                            <li>Büyük/küçük harf, rakam ve özel karakter kullanın</li>
+                            <li>Şifrenizi kimseyle paylaşmayın</li>
+                            <li>Düzenli olarak şifrenizi değiştirin</li>
+                        </ul>
+                    </div>
+                    
+                    <p style='font-size: 12px; color: #666; margin-top: 20px;'>
+                        Link çalışmıyorsa, aşağıdaki adresi tarayıcınıza kopyalayın:<br>
+                        <span style='word-break: break-all; background: white; padding: 10px; border-radius: 3px; font-family: monospace; display: block; margin-top: 10px;'>
+                            $reset_link
+                        </span>
+                    </p>
+                </div>
+                <div class='footer'>
+                    <p>Bu email otomatik olarak gönderilmiştir.</p>
+                    <p><strong>" . MailConfig::SITE_NAME . "</strong> - Hayvanlar için bir yuva</p>
+                    <p style='margin-top: 15px; font-size: 12px; color: #999;'>
+                        Eğer bu talebi siz yapmadıysanız, hesabınız güvende - bu emaili görmezden gelebilirsiniz.
+                    </p>
                 </div>
             </div>
         </body>
