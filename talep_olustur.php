@@ -58,14 +58,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
 
-    // Veritabanına talep ekleme (Tablo adı ve sütun adları güncellendi)
-    $stmt = $conn->prepare("INSERT INTO sahiplenme_istekleri (ilan_id, talep_eden_kullanici_id, ilan_sahibi_kullanici_id, talep_eden_ad_soyad, talep_eden_telefon, talep_eden_email, adres, mesaj) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    // Veritabanına talep ekleme (Direct to pet owner - no admin approval needed)
+    $stmt = $conn->prepare("INSERT INTO sahiplenme_istekleri (ilan_id, talep_eden_kullanici_id, ilan_sahibi_kullanici_id, talep_eden_ad_soyad, talep_eden_telefon, talep_eden_email, adres, mesaj, durum) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'beklemede')");
     if ($stmt) {
         // İlan sahibi ID'si de eklendiği için bind_param da bir 'i' arttırıldı
         $stmt->bind_param("iiisssss", $ilan_id, $talep_eden_kullanici_id, $ilan_sahibi_id, $talep_eden_ad_soyad, $talep_eden_telefon, $talep_eden_email, $adres, $mesaj);
         if ($stmt->execute()) {
             $response['status'] = 'success';
-            $response['message'] = "Sahiplenme talebiniz başarıyla gönderildi!";
+            $response['message'] = "Sahiplenme talebiniz başarıyla gönderildi! İlan sahibi talebinizi inceleyecek ve size geri dönüş yapacak.";
         } else {
             $response['message'] = "Talep kaydedilirken bir hata oluştu: " . $stmt->error;
         }

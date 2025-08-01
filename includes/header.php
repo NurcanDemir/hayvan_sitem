@@ -288,6 +288,14 @@ if ($is_logged_in && $user_id) {
                                     <i class="fas fa-handshake"></i>
                                     Sahiplenme İsteklerim
                                 </a>
+                                <a href="mesajlar.php" class="dropdown-item">
+                                    <i class="fas fa-comments"></i>
+                                    Mesajlarım
+                                </a>
+                                <a href="gelen_talepler.php" class="dropdown-item">
+                                    <i class="fas fa-inbox"></i>
+                                    Gelen Talepler
+                                </a>
                                 <?php if ($user_role === 'admin'): ?>
                                     <a href="admin/admin_panel.php" class="dropdown-item">
                                         <i class="fas fa-cog"></i>

@@ -12,10 +12,17 @@ if (!isset($_SESSION['kullanici_id'])) {
 
 include("includes/db.php");
 
-$user_id = $_SESSION['kullanici_id'];
+$logged_user_id = $_SESSION['kullanici_id'];
 
-// Handle profile photo upload
-if (isset($_POST['upload_photo']) && isset($_FILES['profile_photo'])) {
+// Check if viewing another user's profile
+$viewing_user_id = isset($_GET['kullanici_id']) ? intval($_GET['kullanici_id']) : $logged_user_id;
+$is_own_profile = ($viewing_user_id == $logged_user_id);
+
+// If viewing own profile, use session user_id, otherwise use the provided user_id
+$user_id = $viewing_user_id;
+
+// Handle profile photo upload (only for own profile)
+if ($is_own_profile && isset($_POST['upload_photo']) && isset($_FILES['profile_photo'])) {
     $upload_dir = 'uploads/profiles/';
     
     // Create directory if it doesn't exist
@@ -28,14 +35,14 @@ if (isset($_POST['upload_photo']) && isset($_FILES['profile_photo'])) {
     $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif'];
     
     if (in_array($file_extension, $allowed_extensions) && $file['size'] < 5000000) { // 5MB limit
-        $new_filename = 'profile_' . $user_id . '_' . time() . '.' . $file_extension;
+        $new_filename = 'profile_' . $logged_user_id . '_' . time() . '.' . $file_extension;
         $upload_path = $upload_dir . $new_filename;
         
         if (move_uploaded_file($file['tmp_name'], $upload_path)) {
             // Update database with new profile photo
             $update_sql = "UPDATE kullanicilar SET profil_foto = ? WHERE id = ?";
             $update_stmt = $conn->prepare($update_sql);
-            $update_stmt->bind_param("si", $new_filename, $user_id);
+            $update_stmt->bind_param("si", $new_filename, $logged_user_id);
             $update_stmt->execute();
             
             // Redirect to prevent form resubmission
@@ -45,12 +52,12 @@ if (isset($_POST['upload_photo']) && isset($_FILES['profile_photo'])) {
     }
 }
 
-// Handle bio update
-if (isset($_POST['update_bio'])) {
+// Handle bio update (only for own profile)
+if ($is_own_profile && isset($_POST['update_bio'])) {
     $bio = trim($_POST['bio']);
     $update_sql = "UPDATE kullanicilar SET bio = ? WHERE id = ?";
     $update_stmt = $conn->prepare($update_sql);
-    $update_stmt->bind_param("si", $bio, $user_id);
+    $update_stmt->bind_param("si", $bio, $logged_user_id);
     
     if ($update_stmt->execute()) {
         // Redirect to prevent form resubmission
@@ -59,10 +66,7 @@ if (isset($_POST['update_bio'])) {
     }
 }
 
-$page_title = "Profilim - Hayvan Dostları";
-include("includes/header.php");
-
-// Get user information
+// Get user information first to set page title
 $user_sql = "SELECT k.*, 
              COALESCE(k.profil_foto, '') as profil_foto,
              COALESCE(k.bio, '') as bio,
@@ -74,6 +78,15 @@ $user_stmt->bind_param("i", $user_id);
 $user_stmt->execute();
 $user_info = $user_stmt->get_result()->fetch_assoc();
 
+// Check if user exists
+if (!$user_info) {
+    header("Location: index.php?error=user_not_found");
+    exit();
+}
+
+$page_title = $is_own_profile ? "Profilim - Hayvan Dostları" : htmlspecialchars($user_info['kullanici_adi']) . " - Profil - Hayvan Dostları";
+include("includes/header.php");
+
 // Get user's ads count
 $ads_sql = "SELECT COUNT(*) as toplam_ilan FROM ilanlar WHERE kullanici_id = ?";
 $ads_stmt = $conn->prepare($ads_sql);
@@ -81,54 +94,74 @@ $ads_stmt->bind_param("i", $user_id);
 $ads_stmt->execute();
 $ads_count = $ads_stmt->get_result()->fetch_assoc()['toplam_ilan'];
 
-// Get user's adoption requests count
+// Get user's adoption requests count (only for own profile or just basic count for others)
 $requests_sql = "SELECT COUNT(*) as toplam_istek FROM sahiplenme_istekleri WHERE talep_eden_kullanici_id = ?";
 $requests_stmt = $conn->prepare($requests_sql);
 $requests_stmt->bind_param("i", $user_id);
 $requests_stmt->execute();
 $requests_count = $requests_stmt->get_result()->fetch_assoc()['toplam_istek'];
 
-// Get user's recent ads
-$recent_ads_sql = "SELECT i.*, k.ad as kategori_adi, c.ad as cins_adi,
-                   DATE_FORMAT(i.tarih, '%d.%m.%Y') as ilan_tarihi
-                   FROM ilanlar i
-                   LEFT JOIN kategoriler k ON i.kategori_id = k.id
-                   LEFT JOIN cinsler c ON i.cins_id = c.id
-                   WHERE i.kullanici_id = ?
-                   ORDER BY i.tarih DESC
-                   LIMIT 6";
-$recent_ads_stmt = $conn->prepare($recent_ads_sql);
-$recent_ads_stmt->bind_param("i", $user_id);
-$recent_ads_stmt->execute();
-$recent_ads = $recent_ads_stmt->get_result();
+// Get detailed data only for own profile
+if ($is_own_profile) {
+    // Get user's recent ads
+    $recent_ads_sql = "SELECT i.*, k.ad as kategori_adi, c.ad as cins_adi,
+                       DATE_FORMAT(i.tarih, '%d.%m.%Y') as ilan_tarihi
+                       FROM ilanlar i
+                       LEFT JOIN kategoriler k ON i.kategori_id = k.id
+                       LEFT JOIN cinsler c ON i.cins_id = c.id
+                       WHERE i.kullanici_id = ?
+                       ORDER BY i.tarih DESC
+                       LIMIT 6";
+    $recent_ads_stmt = $conn->prepare($recent_ads_sql);
+    $recent_ads_stmt->bind_param("i", $user_id);
+    $recent_ads_stmt->execute();
+    $recent_ads = $recent_ads_stmt->get_result();
 
-// Get user's recent adoption requests
-$recent_requests_sql = "SELECT si.*, i.baslik as ilan_baslik, i.foto as ilan_foto,
-                        DATE_FORMAT(si.talep_tarihi, '%d.%m.%Y') as talep_tarihi_formatted,
-                        CASE 
-                            WHEN si.durum = 'beklemede' THEN 'Değerlendiriliyor'
-                            WHEN si.durum = 'onaylandı' THEN 'Onaylandı'
-                            WHEN si.durum = 'onaylandi' THEN 'Onaylandı'
-                            WHEN si.durum = 'reddedildi' THEN 'Reddedildi'
-                            WHEN si.durum = 'tamamlandı' THEN 'Tamamlandı'
-                            WHEN si.durum = 'tamamlandi' THEN 'Tamamlandı'
-                            ELSE si.durum
-                        END as durum_text,
-                        CASE 
-                            WHEN si.durum IN ('beklemede') THEN 'warning'
-                            WHEN si.durum IN ('onaylandı', 'onaylandi', 'tamamlandı', 'tamamlandi') THEN 'success'
-                            WHEN si.durum = 'reddedildi' THEN 'danger'
-                            ELSE 'secondary'
-                        END as durum_class
-                        FROM sahiplenme_istekleri si
-                        LEFT JOIN ilanlar i ON si.ilan_id = i.id
-                        WHERE si.talep_eden_kullanici_id = ?
-                        ORDER BY si.talep_tarihi DESC
-                        LIMIT 3";
-$recent_requests_stmt = $conn->prepare($recent_requests_sql);
-$recent_requests_stmt->bind_param("i", $user_id);
-$recent_requests_stmt->execute();
-$recent_requests = $recent_requests_stmt->get_result();
+    // Get user's recent adoption requests
+    $recent_requests_sql = "SELECT si.*, i.baslik as ilan_baslik, i.foto as ilan_foto,
+                            DATE_FORMAT(si.talep_tarihi, '%d.%m.%Y') as talep_tarihi_formatted,
+                            CASE 
+                                WHEN si.durum = 'beklemede' THEN 'Değerlendiriliyor'
+                                WHEN si.durum = 'onaylandı' THEN 'Onaylandı'
+                                WHEN si.durum = 'onaylandi' THEN 'Onaylandı'
+                                WHEN si.durum = 'reddedildi' THEN 'Reddedildi'
+                                WHEN si.durum = 'tamamlandı' THEN 'Tamamlandı'
+                                WHEN si.durum = 'tamamlandi' THEN 'Tamamlandı'
+                                ELSE si.durum
+                            END as durum_text,
+                            CASE 
+                                WHEN si.durum IN ('beklemede') THEN 'warning'
+                                WHEN si.durum IN ('onaylandı', 'onaylandi', 'tamamlandı', 'tamamlandi') THEN 'success'
+                                WHEN si.durum = 'reddedildi' THEN 'danger'
+                                ELSE 'secondary'
+                            END as durum_class
+                            FROM sahiplenme_istekleri si
+                            LEFT JOIN ilanlar i ON si.ilan_id = i.id
+                            WHERE si.talep_eden_kullanici_id = ?
+                            ORDER BY si.talep_tarihi DESC
+                            LIMIT 3";
+    $recent_requests_stmt = $conn->prepare($recent_requests_sql);
+    $recent_requests_stmt->bind_param("i", $user_id);
+    $recent_requests_stmt->execute();
+    $recent_requests = $recent_requests_stmt->get_result();
+} else {
+    // For other users, get only public ads
+    $recent_ads_sql = "SELECT i.*, k.ad as kategori_adi, c.ad as cins_adi,
+                       DATE_FORMAT(i.tarih, '%d.%m.%Y') as ilan_tarihi
+                       FROM ilanlar i
+                       LEFT JOIN kategoriler k ON i.kategori_id = k.id
+                       LEFT JOIN cinsler c ON i.cins_id = c.id
+                       WHERE i.kullanici_id = ?
+                       ORDER BY i.tarih DESC
+                       LIMIT 6";
+    $recent_ads_stmt = $conn->prepare($recent_ads_sql);
+    $recent_ads_stmt->bind_param("i", $user_id);
+    $recent_ads_stmt->execute();
+    $recent_ads = $recent_ads_stmt->get_result();
+    
+    // No detailed requests for other users
+    $recent_requests = null;
+}
 ?>
 
 <style>
@@ -269,11 +302,13 @@ $recent_requests = $recent_requests_stmt->get_result();
                         </div>
                     <?php endif; ?>
                     
-                    <!-- Upload Button -->
-                    <label for="profile_photo_input" class="upload-btn">
-                        <i class="fas fa-camera text-sm"></i>
-                        <input type="file" id="profile_photo_input" accept="image/*" class="hidden" onchange="uploadPhoto(this)">
-                    </label>
+                    <!-- Upload Button (only for own profile) -->
+                    <?php if ($is_own_profile): ?>
+                        <label for="profile_photo_input" class="upload-btn">
+                            <i class="fas fa-camera text-sm"></i>
+                            <input type="file" id="profile_photo_input" accept="image/*" class="hidden" onchange="uploadPhoto(this)">
+                        </label>
+                    <?php endif; ?>
                 </div>
                 
                 <!-- Profile Info -->
@@ -282,29 +317,41 @@ $recent_requests = $recent_requests_stmt->get_result();
                     
                     <!-- Bio Section -->
                     <div class="bio-section mb-4">
-                        <div id="bio-display" class="<?= empty($user_info['bio']) ? 'hidden' : '' ?>">
-                            <p class="text-lg"><?= nl2br(htmlspecialchars($user_info['bio'])) ?></p>
-                            <button onclick="editBio()" class="mt-2 text-white/80 hover:text-white">
-                                <i class="fas fa-edit mr-1"></i>Düzenle
-                            </button>
-                        </div>
-                        
-                        <div id="bio-edit" class="<?= !empty($user_info['bio']) ? 'hidden' : '' ?>">
-                            <form method="POST" class="space-y-3">
-                                <textarea name="bio" rows="3" 
-                                          placeholder="Kendinizi tanıtın... (Örn: Hayvan sever, köpek eğitmeni, veteriner...)"
-                                          class="w-full px-3 py-2 rounded-lg text-gray-800 resize-none"><?= htmlspecialchars($user_info['bio']) ?></textarea>
-                                <div class="flex gap-2">
-                                    <button type="submit" name="update_bio" 
-                                            class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors">
-                                        <i class="fas fa-save mr-1"></i>Kaydet
-                                    </button>
-                                    <button type="button" onclick="cancelBioEdit()" 
-                                            class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-colors">
-                                        İptal
-                                    </button>
+                        <?php if ($is_own_profile): ?>
+                            <div id="bio-display" class="<?= empty($user_info['bio']) ? 'hidden' : '' ?>">
+                                <p class="text-lg"><?= nl2br(htmlspecialchars($user_info['bio'])) ?></p>
+                                <button onclick="editBio()" class="mt-2 text-white/80 hover:text-white">
+                                    <i class="fas fa-edit mr-1"></i>Düzenle
+                                </button>
+                            </div>
+                            
+                            <div id="bio-edit" class="<?= !empty($user_info['bio']) ? 'hidden' : '' ?>">
+                                <form method="POST" class="space-y-3">
+                                    <textarea name="bio" rows="3" 
+                                              placeholder="Kendinizi tanıtın... (Örn: Hayvan sever, köpek eğitmeni, veteriner...)"
+                                              class="w-full px-3 py-2 rounded-lg text-gray-800 resize-none"><?= htmlspecialchars($user_info['bio']) ?></textarea>
+                                    <div class="flex gap-2">
+                                        <button type="submit" name="update_bio" 
+                                                class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors">
+                                            <i class="fas fa-save mr-1"></i>Kaydet
+                                        </button>
+                                        <button type="button" onclick="cancelBioEdit()" 
+                                                class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-colors">
+                                            İptal
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        <?php else: ?>
+                            <!-- View-only bio for other users -->
+                            <?php if (!empty($user_info['bio'])): ?>
+                                <div class="bio-display">
+                                    <p class="text-lg"><?= nl2br(htmlspecialchars($user_info['bio'])) ?></p>
                                 </div>
-                            </form>
+                            <?php else: ?>
+                                <p class="text-lg text-white/70 italic">Bu kullanıcı henüz bio bilgisi eklememis.</p>
+                            <?php endif; ?>
+                        <?php endif; ?>
                         </div>
                     </div>
                     
@@ -321,40 +368,66 @@ $recent_requests = $recent_requests_stmt->get_result();
             <div class="stat-card">
                 <div class="text-3xl font-bold text-purple-600 mb-2"><?= $ads_count ?></div>
                 <div class="text-gray-600 font-medium">Yayınlanan İlan</div>
-                <a href="ilanlarim.php" class="text-purple-500 text-sm hover:underline mt-2 inline-block">
-                    <i class="fas fa-arrow-right mr-1"></i>Tümünü Gör
-                </a>
+                <?php if ($is_own_profile): ?>
+                    <a href="ilanlarim.php" class="text-purple-500 text-sm hover:underline mt-2 inline-block">
+                        <i class="fas fa-arrow-right mr-1"></i>Tümünü Gör
+                    </a>
+                <?php else: ?>
+                    <div class="text-gray-400 text-sm mt-2">
+                        <i class="fas fa-eye mr-1"></i>Aşağıda görüntülenebilir
+                    </div>
+                <?php endif; ?>
             </div>
             
-            <div class="stat-card">
-                <div class="text-3xl font-bold text-pink-600 mb-2"><?= $requests_count ?></div>
-                <div class="text-gray-600 font-medium">Sahiplenme İsteği</div>
-                <a href="sahiplenme_isteklerim.php" class="text-pink-500 text-sm hover:underline mt-2 inline-block">
-                    <i class="fas fa-arrow-right mr-1"></i>Tümünü Gör
-                </a>
-            </div>
-            
-            <div class="stat-card">
-                <div class="text-3xl font-bold text-indigo-600 mb-2">0</div>
-                <div class="text-gray-600 font-medium">Mesaj</div>
-                <div class="text-gray-400 text-sm mt-2">
-                    <i class="fas fa-clock mr-1"></i>Yakında Aktif
+            <?php if ($is_own_profile): ?>
+                <div class="stat-card">
+                    <div class="text-3xl font-bold text-pink-600 mb-2"><?= $requests_count ?></div>
+                    <div class="text-gray-600 font-medium">Sahiplenme İsteği</div>
+                    <a href="sahiplenme_isteklerim.php" class="text-pink-500 text-sm hover:underline mt-2 inline-block">
+                        <i class="fas fa-arrow-right mr-1"></i>Tümünü Gör
+                    </a>
                 </div>
-            </div>
+                
+                <div class="stat-card">
+                    <div class="text-3xl font-bold text-indigo-600 mb-2">0</div>
+                    <div class="text-gray-600 font-medium">Mesaj</div>
+                    <div class="text-gray-400 text-sm mt-2">
+                        <i class="fas fa-clock mr-1"></i>Yakında Aktif
+                    </div>
+                </div>
+            <?php else: ?>
+                <div class="stat-card">
+                    <div class="text-3xl font-bold text-green-600 mb-2"><?= $requests_count ?></div>
+                    <div class="text-gray-600 font-medium">Sahiplenme İsteği</div>
+                    <div class="text-gray-400 text-sm mt-2">
+                        <i class="fas fa-heart mr-1"></i>Gönderilen toplam istek
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="text-3xl font-bold text-blue-600 mb-2"><?= date('Y') - date('Y', strtotime($user_info['created_at'])) ?></div>
+                    <div class="text-gray-600 font-medium">Deneyim Yılı</div>
+                    <div class="text-gray-400 text-sm mt-2">
+                        <i class="fas fa-calendar mr-1"></i>Platform üyeliği
+                    </div>
+                </div>
+            <?php endif; ?>
         </div>
         
         <!-- Tab Navigation -->
         <div class="flex flex-wrap gap-4 mb-8 justify-center">
             <button onclick="showTab('ads')" class="tab-btn active" id="ads-tab">
-                <i class="fas fa-bullhorn mr-2"></i>İlanlarım
+                <i class="fas fa-bullhorn mr-2"></i><?= $is_own_profile ? 'İlanlarım' : 'İlanları' ?>
             </button>
-            <button onclick="showTab('requests')" class="tab-btn" id="requests-tab">
-                <i class="fas fa-heart mr-2"></i>İsteklerim
-            </button>
-            <button onclick="showTab('messages')" class="tab-btn" id="messages-tab">
-                <i class="fas fa-envelope mr-2"></i>Mesajlar
-                <span class="ml-2 bg-gray-300 text-gray-600 px-2 py-1 rounded-full text-xs">Yakında</span>
-            </button>
+            <?php if ($is_own_profile): ?>
+                <button onclick="showTab('requests')" class="tab-btn" id="requests-tab">
+                    <i class="fas fa-heart mr-2"></i>İsteklerim
+                </button>
+                <button onclick="showTab('messages')" class="tab-btn" id="messages-tab">
+                    <i class="fas fa-envelope mr-2"></i>Mesajlar
+                    <span class="ml-2 bg-gray-300 text-gray-600 px-2 py-1 rounded-full text-xs">Yakında</span>
+                </button>
+            <?php endif; ?>
         </div>
         
         <!-- Tab Contents -->
@@ -365,46 +438,53 @@ $recent_requests = $recent_requests_stmt->get_result();
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">
                         <i class="fas fa-bullhorn mr-3 text-purple-600"></i>
-                        Son İlanlarım
+                        <?= $is_own_profile ? 'Son İlanlarım' : htmlspecialchars($user_info['kullanici_adi']) . '\'in İlanları' ?>
                     </h2>
-                    <a href="ilan_ekle.php" 
-                       class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200">
-                        <i class="fas fa-plus mr-2"></i>Yeni İlan
-                    </a>
+                    <?php if ($is_own_profile): ?>
+                        <a href="ilan_ekle.php" 
+                           class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200">
+                            <i class="fas fa-plus mr-2"></i>Yeni İlan
+                        </a>
+                    <?php else: ?>
+                        <div class="text-gray-500 text-sm">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Toplam <?= $ads_count ?> ilan
+                        </div>
+                    <?php endif; ?>
                 </div>
                 
                 <?php if ($recent_ads && $recent_ads->num_rows > 0): ?>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <?php while ($ad = $recent_ads->fetch_assoc()): ?>
-                            <div class="ad-item">
-                                <div class="relative h-48">
-                                    <?php 
-                                    $image_path = !empty($ad['foto']) ? 'uploads/' . htmlspecialchars($ad['foto']) : '';
-                                    $display_image = (file_exists($image_path) && !empty($image_path)) ? $image_path : '';
-                                    ?>
-                                    <?php if ($display_image): ?>
-                                        <img src="<?= $display_image ?>" 
-                                             alt="<?= htmlspecialchars($ad['baslik']) ?>" 
-                                             class="w-full h-full object-cover">
-                                    <?php else: ?>
-                                        <div class="w-full h-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center">
-                                            <i class="fas fa-paw text-white text-4xl"></i>
+                    <?php if ($is_own_profile): ?>
+                        <!-- Detailed view for own profile -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <?php while ($ad = $recent_ads->fetch_assoc()): ?>
+                                <div class="ad-item">
+                                    <div class="relative h-48">
+                                        <?php 
+                                        $image_path = !empty($ad['foto']) ? 'uploads/' . htmlspecialchars($ad['foto']) : '';
+                                        $display_image = (file_exists($image_path) && !empty($image_path)) ? $image_path : '';
+                                        ?>
+                                        <?php if ($display_image): ?>
+                                            <img src="<?= $display_image ?>" 
+                                                 alt="<?= htmlspecialchars($ad['baslik']) ?>" 
+                                                 class="w-full h-full object-cover">
+                                        <?php else: ?>
+                                            <div class="w-full h-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center">
+                                                <i class="fas fa-paw text-white text-4xl"></i>
+                                            </div>
+                                        <?php endif; ?>
+                                        
+                                        <div class="absolute top-3 right-3">
+                                            <span class="bg-white/90 text-gray-800 px-2 py-1 rounded-full text-xs font-medium">
+                                                <?= htmlspecialchars($ad['kategori_adi']) ?>
+                                            </span>
                                         </div>
-                                    <?php endif; ?>
-                                    
-                                    <div class="absolute top-3 right-3">
-                                        <span class="bg-white/90 text-gray-800 px-2 py-1 rounded-full text-xs font-medium">
-                                            <?= htmlspecialchars($ad['kategori_adi']) ?>
-                                        </span>
                                     </div>
-                                </div>
-                                
-                                <div class="p-4">
-                                    <h3 class="font-bold text-gray-800 mb-2 line-clamp-2">
-                                        <?= htmlspecialchars($ad['baslik']) ?>
-                                    </h3>
                                     
-                                    <div class="flex items-center gap-2 mb-3">
+                                    <div class="p-4">
+                                        <h3 class="font-bold text-gray-800 mb-2 line-clamp-2">
+                                            <?= htmlspecialchars($ad['baslik']) ?>
+                                        </h3>
                                         <?php if ($ad['cins_adi']): ?>
                                             <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs">
                                                 <?= htmlspecialchars($ad['cins_adi']) ?>
@@ -443,20 +523,88 @@ $recent_requests = $recent_requests_stmt->get_result();
                         </div>
                     <?php endif; ?>
                     
+                    <?php else: ?>
+                        <!-- Simple view for other users -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <?php while ($ad = $recent_ads->fetch_assoc()): ?>
+                                <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
+                                    <div class="relative h-48">
+                                        <?php 
+                                        $image_path = !empty($ad['foto']) ? 'uploads/' . htmlspecialchars($ad['foto']) : '';
+                                        $display_image = (file_exists($image_path) && !empty($image_path)) ? $image_path : '';
+                                        ?>
+                                        <?php if ($display_image): ?>
+                                            <img src="<?= $display_image ?>" 
+                                                 alt="<?= htmlspecialchars($ad['baslik']) ?>" 
+                                                 class="w-full h-full object-cover">
+                                        <?php else: ?>
+                                            <div class="w-full h-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center">
+                                                <i class="fas fa-paw text-white text-4xl"></i>
+                                            </div>
+                                        <?php endif; ?>
+                                        
+                                        <div class="absolute top-3 right-3">
+                                            <span class="bg-white/90 text-gray-800 px-2 py-1 rounded-full text-xs font-medium">
+                                                <?= htmlspecialchars($ad['kategori_adi']) ?>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="p-4">
+                                        <h3 class="font-bold text-gray-800 mb-2 line-clamp-2">
+                                            <?= htmlspecialchars($ad['baslik']) ?>
+                                        </h3>
+                                        
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-gray-500 text-sm">
+                                                <i class="fas fa-calendar mr-1"></i>
+                                                <?= $ad['ilan_tarihi'] ?>
+                                            </span>
+                                            
+                                            <a href="ilan_detay.php?id=<?= $ad['id'] ?>" 
+                                               class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm transition-colors">
+                                                <i class="fas fa-eye mr-1"></i>Detay
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endwhile; ?>
+                        </div>
+                        
+                        <?php if ($ads_count > 6): ?>
+                            <div class="text-center mt-8">
+                                <a href="ilanlar.php?kullanici=<?= $user_id ?>" 
+                                   class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-semibold transition-colors">
+                                    <i class="fas fa-th-large mr-2"></i>Tüm İlanları Görüntüle (<?= $ads_count ?>)
+                                </a>
+                            </div>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                    
                 <?php else: ?>
                     <div class="text-center py-12">
                         <div class="text-6xl mb-4">📢</div>
-                        <h3 class="text-xl font-bold text-gray-600 mb-3">Henüz İlan Yayınlamadınız</h3>
-                        <p class="text-gray-500 mb-6">İlk ilanınızı oluşturun ve hayvan dostlarınızı yeni ailelerine kavuşturun.</p>
-                        <a href="ilan_ekle.php" 
-                           class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 inline-block">
-                            <i class="fas fa-plus mr-2"></i>İlk İlanımı Oluştur
-                        </a>
+                        <?php if ($is_own_profile): ?>
+                            <h3 class="text-xl font-bold text-gray-600 mb-3">Henüz İlan Yayınlamadınız</h3>
+                            <p class="text-gray-500 mb-6">İlk ilanınızı oluşturun ve hayvan dostlarınızı yeni ailelerine kavuşturun.</p>
+                            <a href="ilan_ekle.php" 
+                               class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 inline-block">
+                                <i class="fas fa-plus mr-2"></i>İlk İlanımı Oluştur
+                            </a>
+                        <?php else: ?>
+                            <h3 class="text-xl font-bold text-gray-600 mb-3"><?= htmlspecialchars($user_info['kullanici_adi']) ?> Henüz İlan Yayınlamamış</h3>
+                            <p class="text-gray-500 mb-6">Bu kullanıcı henüz hiç ilan paylaşmamış.</p>
+                            <a href="ilanlar.php" 
+                               class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 inline-block">
+                                <i class="fas fa-search mr-2"></i>Diğer İlanları İncele
+                            </a>
+                        <?php endif; ?>
                     </div>
                 <?php endif; ?>
             </div>
         </div>
         
+        <?php if ($is_own_profile): ?>
         <!-- My Requests Tab -->
         <div id="requests-content" class="tab-content">
             <div class="section-card">
@@ -549,22 +697,38 @@ $recent_requests = $recent_requests_stmt->get_result();
             <div class="section-card">
                 <div class="text-center py-16">
                     <div class="text-8xl mb-6">💬</div>
-                    <h2 class="text-3xl font-bold text-gray-600 mb-4">Mesaj Özelliği Yakında</h2>
+                    <h2 class="text-3xl font-bold text-gray-600 mb-4">Mesajlarınız</h2>
                     <p class="text-xl text-gray-500 mb-8 max-w-2xl mx-auto">
-                        Yakında diğer kullanıcılarla doğrudan mesajlaşabilecek, sahiplenme süreçlerinizi daha kolay yönetebileceksiniz.
+                        Sahiplenme görüşmelerinizi ve diğer kullanıcılarla olan konuşmalarınızı yönetin.
                     </p>
-                    <div class="bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg p-6 max-w-md mx-auto">
-                        <h3 class="font-bold text-gray-800 mb-3">Gelecek Özellikler:</h3>
-                        <ul class="text-left text-gray-600 space-y-2">
-                            <li><i class="fas fa-check text-green-500 mr-2"></i>Anlık mesajlaşma</li>
-                            <li><i class="fas fa-check text-green-500 mr-2"></i>Fotoğraf paylaşımı</li>
-                            <li><i class="fas fa-check text-green-500 mr-2"></i>Mesaj bildirimları</li>
-                            <li><i class="fas fa-check text-green-500 mr-2"></i>Engelleme sistemi</li>
-                        </ul>
+                    <a href="mesajlar.php" 
+                       class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 inline-block text-lg">
+                        <i class="fas fa-comments mr-3"></i>Mesajlarıma Git
+                    </a>
+                    
+                    <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+                        <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4">
+                            <i class="fas fa-bolt text-purple-600 text-2xl mb-2"></i>
+                            <h4 class="font-semibold text-gray-800 mb-1">Anlık Mesajlaşma</h4>
+                            <p class="text-sm text-gray-600">Gerçek zamanlı konuşmalar</p>
+                        </div>
+                        
+                        <div class="bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg p-4">
+                            <i class="fas fa-shield-alt text-pink-600 text-2xl mb-2"></i>
+                            <h4 class="font-semibold text-gray-800 mb-1">Güvenli İletişim</h4>
+                            <p class="text-sm text-gray-600">Engelleme ve raporlama</p>
+                        </div>
+                        
+                        <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg p-4">
+                            <i class="fas fa-paw text-indigo-600 text-2xl mb-2"></i>
+                            <h4 class="font-semibold text-gray-800 mb-1">Sahiplenme Odaklı</h4>
+                            <p class="text-sm text-gray-600">İlan bazlı konuşmalar</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+        <?php endif; ?>
         
     </div>
 </main>
