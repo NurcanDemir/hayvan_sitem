@@ -11,6 +11,19 @@ $current_page = basename($_SERVER['PHP_SELF']);
 $is_logged_in = isset($_SESSION['kullanici_id']);
 $kullanici_adi = $_SESSION['kullanici_adi'] ?? '';
 $user_role = $_SESSION['rol'] ?? 'kullanici';
+$user_id = $_SESSION['kullanici_id'] ?? null;
+
+// Get user profile photo if logged in
+$user_profile_photo = '';
+if ($is_logged_in && $user_id) {
+    include_once(__DIR__ . '/db.php');
+    $profile_sql = "SELECT profil_foto FROM kullanicilar WHERE id = ?";
+    $profile_stmt = $conn->prepare($profile_sql);
+    $profile_stmt->bind_param("i", $user_id);
+    $profile_stmt->execute();
+    $profile_result = $profile_stmt->get_result()->fetch_assoc();
+    $user_profile_photo = $profile_result['profil_foto'] ?? '';
+}
 ?>
 <!DOCTYPE html>
 <html lang="tr">
@@ -122,6 +135,7 @@ $user_role = $_SESSION['rol'] ?? 'kullanici';
             min-width: 200px;
             padding: 8px 0;
             border: 1px solid #e5e7eb;
+            margin-top: 8px; /* Add small gap to prevent accidental hiding */
         }
 
         .dropdown:hover .dropdown-menu,
@@ -131,14 +145,14 @@ $user_role = $_SESSION['rol'] ?? 'kullanici';
             transform: translateY(0);
         }
 
-        /* Keep dropdown open when hovering */
+        /* Add invisible bridge to prevent dropdown from closing */
         .dropdown:hover .dropdown-menu::before {
             content: '';
             position: absolute;
             top: -10px;
             left: 0;
             right: 0;
-            height: 10px;
+            height: 12px;
             background: transparent;
         }
 
@@ -245,10 +259,15 @@ $user_role = $_SESSION['rol'] ?? 'kullanici';
                         <!-- User Dropdown -->
                         <div class="dropdown">
                             <button class="flex items-center space-x-2 text-gray-600 hover:text-purple-600 focus:outline-none">
-                                <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                                    <i class="fas fa-user text-purple-600"></i>
+                                <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center overflow-hidden">
+                                    <?php if (!empty($user_profile_photo) && file_exists('uploads/profiles/' . $user_profile_photo)): ?>
+                                        <img src="uploads/profiles/<?= htmlspecialchars($user_profile_photo) ?>" 
+                                             alt="Profil Fotoğrafı" class="w-full h-full object-cover">
+                                    <?php else: ?>
+                                        <i class="fas fa-user text-purple-600"></i>
+                                    <?php endif; ?>
                                 </div>
-                                <span class="hidden sm:block font-medium"><?= htmlspecialchars($kullanici_adi) ?></span>
+                                <a href="profil.php" class="hidden sm:block font-medium hover:text-purple-600"><?= htmlspecialchars($kullanici_adi) ?></a>
                                 <i class="fas fa-chevron-down text-sm"></i>
                             </button>
                             
@@ -265,9 +284,9 @@ $user_role = $_SESSION['rol'] ?? 'kullanici';
                                     <i class="fas fa-heart"></i>
                                     Favorilerim
                                 </a>
-                                <a href="sahiplendirme_isteklerim.php" class="dropdown-item">
+                                <a href="sahiplenme_isteklerim.php" class="dropdown-item">
                                     <i class="fas fa-handshake"></i>
-                                    Sahiplendirme İsteklerim
+                                    Sahiplenme İsteklerim
                                 </a>
                                 <?php if ($user_role === 'admin'): ?>
                                     <a href="admin/admin_panel.php" class="dropdown-item">
@@ -374,7 +393,7 @@ $user_role = $_SESSION['rol'] ?? 'kullanici';
                         menu.style.opacity = '0';
                         menu.style.visibility = 'hidden';
                         menu.style.transform = 'translateY(-10px)';
-                    }, 100); // Small delay to allow moving to dropdown
+                    }, 300); // Increased delay to 300ms
                 });
 
                 // Keep dropdown open when hovering over menu
@@ -387,7 +406,7 @@ $user_role = $_SESSION['rol'] ?? 'kullanici';
                         menu.style.opacity = '0';
                         menu.style.visibility = 'hidden';
                         menu.style.transform = 'translateY(-10px)';
-                    }, 100);
+                    }, 300); // Increased delay to 300ms
                 });
             });
         });
