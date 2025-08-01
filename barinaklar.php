@@ -96,7 +96,21 @@ $user_id = $_SESSION['kullanici_id'] ?? null;
     }
     
     .search-container {
-        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        background: linear-gradient(135deg, #f8fafc 0%, #fdf2f8 50%, #fef7ff 100%);
+        color: #374151;
+    }
+    
+    .search-container h1 {
+        color: #6b21a8;
+    }
+    
+    .search-container p {
+        color: #6b7280;
+    }
+    
+    .search-container label {
+        color: #4b5563;
+        font-weight: 600;
     }
     
     .stats-card {
@@ -140,32 +154,32 @@ $user_id = $_SESSION['kullanici_id'] ?? null;
     <div class="search-container py-16">
         <div class="max-w-7xl mx-auto px-6">
             <div class="text-center mb-12">
-                <h1 class="text-5xl font-bold text-white mb-6">
-                    <i class="fas fa-building mr-4"></i>
+                <h1 class="text-5xl font-bold mb-6">
+                    <i class="fas fa-building mr-4 text-purple-600"></i>
                     Hayvan Barınakları
                 </h1>
-                <p class="text-xl text-purple-100 mb-8 max-w-3xl mx-auto">
+                <p class="text-xl mb-8 max-w-3xl mx-auto">
                     Türkiye genelindeki hayvan barınaklarını keşfedin. Onlara destek olun, gönüllü olun veya sahiplendirme yapın.
                 </p>
             </div>
 
             <!-- Arama ve Filtre -->
-            <div class="bg-white/20 backdrop-blur-sm rounded-2xl p-6 mb-8">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 mb-8 shadow-lg">
                 <form method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label class="block text-white font-medium mb-2">
-                            <i class="fas fa-search mr-2"></i>Barınak Ara
+                        <label class="block font-medium mb-2">
+                            <i class="fas fa-search mr-2 text-purple-600"></i>Barınak Ara
                         </label>
                         <input type="text" name="search" value="<?= htmlspecialchars($_GET['search'] ?? '') ?>" 
                                placeholder="Barınak adı, şehir veya adres..."
-                               class="w-full px-4 py-3 rounded-lg border-0 focus:ring-2 focus:ring-white focus:ring-opacity-50 text-gray-800">
+                               class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-gray-800">
                     </div>
                     
                     <div>
-                        <label class="block text-white font-medium mb-2">
-                            <i class="fas fa-map-marker-alt mr-2"></i>İl Seçin
+                        <label class="block font-medium mb-2">
+                            <i class="fas fa-map-marker-alt mr-2 text-purple-600"></i>İl Seçin
                         </label>
-                        <select name="il_id" class="w-full px-4 py-3 rounded-lg border-0 focus:ring-2 focus:ring-white focus:ring-opacity-50 text-gray-800">
+                        <select name="il_id" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-gray-800">
                             <option value="">Tüm İller</option>
                             <?php foreach($iller as $il): ?>
                                 <option value="<?= $il['id'] ?>" <?= (@$_GET['il_id']==$il['id'])?'selected':'' ?>>
@@ -176,7 +190,7 @@ $user_id = $_SESSION['kullanici_id'] ?? null;
                     </div>
                     
                     <div class="flex items-end">
-                        <button type="submit" class="w-full bg-white text-primary px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors duration-200">
+                        <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg">
                             <i class="fas fa-search mr-2"></i>Ara
                         </button>
                     </div>
