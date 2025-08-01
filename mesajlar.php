@@ -29,8 +29,8 @@ if ($conversation_id > 0) {
     $stmt->execute();
 }
 
-// DEBUG: Always log when page loads to track if POST is being processed
-if ($debug_mode) {
+// DEBUG: Only show debug output for non-AJAX requests
+if ($debug_mode && !isset($_POST['ajax']) && !isset($_GET['get_messages'])) {
     echo "<div style='background: cyan; padding: 10px; margin: 10px; border: 2px solid blue; font-size: 14px; position: relative; z-index: 1000;'>";
     echo "<strong>🔍 PAGE LOAD DEBUG</strong><br>";
     echo "Method: " . $_SERVER['REQUEST_METHOD'] . "<br>";
@@ -43,6 +43,110 @@ if ($debug_mode) {
     echo "Time: " . date('H:i:s') . "<br>";
     echo "URL: " . $_SERVER['REQUEST_URI'];
     echo "</div>";
+}
+
+// Handle AJAX requests for sending messages
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax']) && $_POST['ajax'] === '1') {
+    header('Content-Type: application/json');
+    
+    $message_content = trim($_POST['message_content']);
+    $conversation_id = intval($_POST['conversation_id']);
+    
+    if (!empty($message_content) && $conversation_id > 0) {
+        // Verify user is part of this conversation
+        $stmt = $conn->prepare("SELECT * FROM conversations WHERE id = ? AND (ilan_sahibi_id = ? OR talep_eden_id = ?)");
+        $stmt->bind_param("iii", $conversation_id, $user_id, $user_id);
+        $stmt->execute();
+        $conversation = $stmt->get_result()->fetch_assoc();
+        
+        if ($conversation) {
+            // Check if conversation is still active (not blocked)
+            $other_user_id = ($conversation['ilan_sahibi_id'] == $user_id) ? $conversation['talep_eden_id'] : $conversation['ilan_sahibi_id'];
+            
+            $stmt = $conn->prepare("SELECT COUNT(*) as blocked FROM blocked_users WHERE (blocker_id = ? AND blocked_id = ?) OR (blocker_id = ? AND blocked_id = ?)");
+            $stmt->bind_param("iiii", $user_id, $other_user_id, $other_user_id, $user_id);
+            $stmt->execute();
+            $blocked_result = $stmt->get_result()->fetch_assoc();
+            
+            if ($blocked_result['blocked'] == 0) {
+                // Send message
+                $stmt = $conn->prepare("INSERT INTO messages (conversation_id, sender_id, receiver_id, message, created_at) VALUES (?, ?, ?, ?, NOW())");
+                $stmt->bind_param("iiis", $conversation_id, $user_id, $other_user_id, $message_content);
+                
+                if ($stmt->execute()) {
+                    $message_id = $stmt->insert_id;
+                    
+                    // Update conversation's last activity
+                    $stmt = $conn->prepare("UPDATE conversations SET updated_at = NOW() WHERE id = ?");
+                    $stmt->bind_param("i", $conversation_id);
+                    $stmt->execute();
+                    
+                    // Return success response with message data
+                    echo json_encode([
+                        'success' => true,
+                        'message_id' => $message_id,
+                        'message' => htmlspecialchars($message_content),
+                        'time' => date('H:i'),
+                        'timestamp' => time()
+                    ]);
+                    exit();
+                } else {
+                    echo json_encode(['success' => false, 'error' => 'Failed to send message']);
+                    exit();
+                }
+            } else {
+                echo json_encode(['success' => false, 'error' => 'Conversation is blocked']);
+                exit();
+            }
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Conversation not found']);
+            exit();
+        }
+    } else {
+        echo json_encode(['success' => false, 'error' => 'Invalid message data']);
+        exit();
+    }
+}
+
+// Handle AJAX requests for getting new messages
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['get_messages']) && $_GET['get_messages'] === '1') {
+    header('Content-Type: application/json');
+    
+    $conversation_id = isset($_GET['conversation_id']) ? intval($_GET['conversation_id']) : 0;
+    $since_timestamp = isset($_GET['since']) ? intval($_GET['since']) : 0;
+    
+    if ($conversation_id > 0) {
+        // Get new messages since timestamp
+        $stmt = $conn->prepare("
+            SELECT m.*, u.kullanici_adi, u.profil_foto
+            FROM messages m
+            JOIN kullanicilar u ON m.sender_id = u.id
+            WHERE m.conversation_id = ? AND UNIX_TIMESTAMP(m.created_at) > ?
+            ORDER BY m.created_at ASC
+        ");
+        $stmt->bind_param("ii", $conversation_id, $since_timestamp);
+        $stmt->execute();
+        $new_messages = $stmt->get_result();
+        
+        $messages_array = [];
+        while ($message = $new_messages->fetch_assoc()) {
+            $messages_array[] = [
+                'id' => $message['id'],
+                'sender_id' => $message['sender_id'],
+                'message' => htmlspecialchars($message['message']),
+                'time' => date('H:i', strtotime($message['created_at'])),
+                'timestamp' => strtotime($message['created_at']),
+                'is_read' => $message['is_read'],
+                'sender_name' => htmlspecialchars($message['kullanici_adi'])
+            ];
+        }
+        
+        echo json_encode(['success' => true, 'messages' => $messages_array]);
+        exit();
+    } else {
+        echo json_encode(['success' => false, 'error' => 'Invalid conversation ID']);
+        exit();
+    }
 }
 
 // Handle sending new message - Check for POST data instead of button
@@ -527,6 +631,15 @@ include("includes/header.php");
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+// Auto-scroll to bottom of messages - moved outside to be globally accessible
+function scrollToBottom() {
+    const messagesContainer = document.getElementById('messagesContainer');
+    if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        console.log('📜 Scrolled to bottom');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🔧 Mesajlar page loaded');
     
@@ -544,18 +657,18 @@ document.addEventListener('DOMContentLoaded', function() {
             this.style.height = Math.min(this.scrollHeight, 120) + 'px';
         });
         
-        // Simple Enter key handler
+        // Simple Enter key handler - AJAX VERSION
         textarea.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                console.log('📤 Enter pressed, triggering send button click');
+                console.log('📤 Enter pressed - AJAX mode');
                 
                 const messageContent = this.value.trim();
                 console.log('📝 Message content before submit:', messageContent);
                 
                 if (messageContent) {
-                    console.log('🎯 Triggering send button click...');
-                    sendButton.click();
+                    console.log('🎯 Sending via AJAX...');
+                    sendMessageAjax(messageContent);
                 } else {
                     console.log('⚠️ Empty message');
                     this.style.borderColor = '#ef4444';
@@ -566,22 +679,25 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Add click handler for send button
+        // Add click handler for send button - AJAX VERSION
         sendButton.addEventListener('click', function(e) {
-            console.log('🖱️ Send button clicked');
+            e.preventDefault(); // Prevent form submission
+            console.log('🖱️ Send button clicked - AJAX mode');
+            
             const messageContent = textarea.value.trim();
-            console.log('📝 Message content on button click:', messageContent);
+            console.log('📝 Message content:', messageContent);
             
             if (!messageContent) {
-                e.preventDefault();
-                console.log('❌ Preventing submission - empty message');
-                return false;
+                console.log('❌ Empty message');
+                textarea.style.borderColor = '#ef4444';
+                setTimeout(() => {
+                    textarea.style.borderColor = '#d1d5db';
+                }, 1000);
+                return;
             }
             
-            console.log('✅ Button click allowing form submission');
-            
-            // Don't interfere with form submission - let it happen naturally
-            console.log('🚀 Natural form submission proceeding...');
+            // Send message via AJAX
+            sendMessageAjax(messageContent);
         });
         
         // Focus on message input when page loads
@@ -593,15 +709,6 @@ document.addEventListener('DOMContentLoaded', function() {
             form: !!form,
             sendButton: !!sendButton
         });
-    }
-    
-    // Auto-scroll to bottom of messages
-    function scrollToBottom() {
-        const messagesContainer = document.getElementById('messagesContainer');
-        if (messagesContainer) {
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            console.log('📜 Scrolled to bottom');
-        }
     }
     
     // Initial scroll to bottom
@@ -660,6 +767,206 @@ setInterval(function() {
 }, 5000);
 
 console.log('🎉 All event handlers set up successfully');
+
+// AJAX Functions for real-time messaging
+let lastMessageTimestamp = Math.floor(Date.now() / 1000);
+
+// Send message via AJAX
+function sendMessageAjax(messageContent) {
+    console.log('🚀 sendMessageAjax called with:', messageContent);
+    
+    const conversationId = new URLSearchParams(window.location.search).get('conversation');
+    if (!conversationId) {
+        console.error('❌ No conversation ID found');
+        alert('Konuşma ID bulunamadı!');
+        return;
+    }
+    
+    console.log('📋 Conversation ID:', conversationId);
+    
+    // Get elements fresh (in case they weren't available globally)
+    const sendButton = document.querySelector('#sendButton');
+    const textarea = document.querySelector('#messageTextarea');
+    
+    if (!sendButton || !textarea) {
+        console.error('❌ Required elements not found:', { sendButton: !!sendButton, textarea: !!textarea });
+        alert('Form elemanları bulunamadı!');
+        return;
+    }
+    
+    console.log('📤 Sending message via AJAX:', messageContent);
+    
+    // Show loading state
+    const originalButtonContent = sendButton.innerHTML;
+    sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    sendButton.disabled = true;
+    
+    // Add message optimistically (instant feedback)
+    addMessageToChat(messageContent, true, true);
+    
+    // Clear textarea immediately
+    textarea.value = '';
+    textarea.style.height = 'auto';
+    
+    // Send AJAX request
+    const currentUrl = window.location.pathname + '?conversation=' + conversationId;
+    console.log('📍 Sending to URL:', currentUrl);
+    
+    fetch(currentUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `ajax=1&conversation_id=${conversationId}&message_content=${encodeURIComponent(messageContent)}`
+    })
+    .then(response => {
+        console.log('📨 Response status:', response.status);
+        console.log('📨 Response headers:', response.headers.get('content-type'));
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        return response.text(); // Get as text first to see what we're receiving
+    })
+    .then(responseText => {
+        console.log('📄 Raw response:', responseText);
+        
+        // Try to parse as JSON
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (e) {
+            console.error('❌ JSON Parse Error:', e);
+            console.error('❌ Raw response that failed to parse:', responseText);
+            throw new Error('Invalid JSON response: ' + responseText.substring(0, 100));
+        }
+        
+        console.log('✅ AJAX Response:', data);
+        
+        // Reset button
+        sendButton.innerHTML = originalButtonContent;
+        sendButton.disabled = false;
+        
+        if (data.success) {
+            console.log('✅ Message sent successfully!');
+            // Update timestamp for new message polling
+            lastMessageTimestamp = data.timestamp;
+            
+            // Update the optimistic message with real data
+            updateOptimisticMessage(data.message_id, data.time);
+        } else {
+            console.error('❌ Failed to send message:', data.error);
+            // Remove the optimistic message
+            removeOptimisticMessage();
+            alert('Mesaj gönderilemedi: ' + data.error);
+        }
+        
+        // Focus back to textarea
+        textarea.focus();
+    })
+    .catch(error => {
+        console.error('❌ AJAX Error:', error);
+        
+        // Reset button in error case
+        sendButton.innerHTML = originalButtonContent;
+        sendButton.disabled = false;
+        
+        // Remove the optimistic message
+        removeOptimisticMessage();
+        alert('Bağlantı hatası! Lütfen tekrar deneyin.\n\nHata: ' + error.message);
+        
+        // Restore message to textarea
+        textarea.value = messageContent;
+        textarea.focus();
+    });
+}
+
+// Add message to chat instantly (optimistic update)
+function addMessageToChat(message, isSent, isOptimistic = false) {
+    const messagesContainer = document.getElementById('messagesContainer');
+    if (!messagesContainer) return;
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `flex ${isSent ? 'justify-end' : 'justify-start'}`;
+    if (isOptimistic) messageDiv.classList.add('optimistic-message');
+    
+    const currentTime = new Date().toLocaleTimeString('tr-TR', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    });
+    
+    messageDiv.innerHTML = `
+        <div class="message-bubble p-3 rounded-lg ${isSent ? 'message-sent' : 'message-received'} ${isOptimistic ? 'opacity-70' : ''}">
+            <p class="text-sm">${message.replace(/\n/g, '<br>')}</p>
+            <p class="text-xs mt-2 opacity-70">
+                ${currentTime}
+                ${isSent ? '<i class="fas fa-clock ml-1"></i>' : ''}
+            </p>
+        </div>
+    `;
+    
+    messagesContainer.appendChild(messageDiv);
+    scrollToBottom();
+}
+
+// Update optimistic message with real data
+function updateOptimisticMessage(messageId, realTime) {
+    const optimisticMessage = document.querySelector('.optimistic-message');
+    if (optimisticMessage) {
+        // Remove optimistic styling
+        optimisticMessage.classList.remove('optimistic-message');
+        const bubble = optimisticMessage.querySelector('.message-bubble');
+        bubble.classList.remove('opacity-70');
+        
+        // Update time and add check mark
+        const timeElement = bubble.querySelector('.text-xs');
+        timeElement.innerHTML = `${realTime} <i class="fas fa-check ml-1"></i>`;
+        
+        console.log('✅ Updated optimistic message');
+    }
+}
+
+// Remove optimistic message if sending failed
+function removeOptimisticMessage() {
+    const optimisticMessage = document.querySelector('.optimistic-message');
+    if (optimisticMessage) {
+        optimisticMessage.remove();
+        console.log('❌ Removed failed optimistic message');
+    }
+}
+
+// Check for new messages periodically
+function checkForNewMessages() {
+    const conversationId = new URLSearchParams(window.location.search).get('conversation');
+    if (!conversationId) return;
+    
+    fetch(`${window.location.href}&get_messages=1&conversation_id=${conversationId}&since=${lastMessageTimestamp}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.messages.length > 0) {
+            const currentUserId = <?= $user_id ?>;
+            
+            data.messages.forEach(message => {
+                const isSent = message.sender_id == currentUserId;
+                if (!isSent) { // Only add messages from other users
+                    addMessageToChat(message.message, false);
+                    console.log('📨 New message received:', message.message);
+                }
+                // Update timestamp
+                if (message.timestamp > lastMessageTimestamp) {
+                    lastMessageTimestamp = message.timestamp;
+                }
+            });
+        }
+    })
+    .catch(error => {
+        console.log('Auto-refresh error:', error);
+    });
+}
+
+// Start checking for new messages every 3 seconds
+setInterval(checkForNewMessages, 3000);
 
 // Test function for debugging
 function testFormSubmission() {
