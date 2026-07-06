@@ -44,34 +44,50 @@ if ($is_logged_in && $user_id) {
     <!-- Custom CSS -->
     <style>
         :root {
-            --primary: #ba3689;
-            --primary-light: #d946ef;
-            --primary-lighter: #f3e8ff;
-            --primary-lightest: #faf5ff;
-            --secondary: #6366f1;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --error: #ef4444;
+            --bg-light: #F8F9FA;
+            --primary-pink: #FFB3C6;
+            --action-mint: #A8DADC;
+            --text-dark: #2B2D42;
+        }
+
+        body {
+            background:
+                radial-gradient(circle at 12% 15%, rgba(255, 179, 198, 0.28), transparent 46%),
+                radial-gradient(circle at 88% 8%, rgba(168, 218, 220, 0.28), transparent 42%),
+                var(--bg-light) !important;
+            color: var(--text-dark);
+        }
+
+        nav {
+            background: rgba(248, 249, 250, 0.94) !important;
+            border-bottom: 1px solid var(--primary-pink);
+            box-shadow: 0 10px 24px rgba(43, 45, 66, 0.08) !important;
+            backdrop-filter: blur(10px);
         }
 
         .btn-gradient {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            background: var(--action-mint);
+            color: var(--text-dark);
+            border-radius: 14px;
+            box-shadow: 0 10px 24px rgba(43, 45, 66, 0.1);
             transition: all 0.3s ease;
         }
 
         .btn-gradient:hover {
-            background: linear-gradient(135deg, var(--primary-light) 0%, var(--secondary) 100%);
+            background: var(--action-mint);
             transform: translateY(-1px);
-            box-shadow: 0 10px 25px rgba(186, 54, 137, 0.3);
+            box-shadow: 0 14px 30px rgba(43, 45, 66, 0.14);
         }
 
         .card-hover {
             transition: all 0.3s ease;
+            border: 1px solid var(--primary-pink);
+            border-radius: 16px;
         }
 
         .card-hover:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 16px 34px rgba(43, 45, 66, 0.12);
         }
 
         .line-clamp-2 {
@@ -88,7 +104,6 @@ if ($is_logged_in && $user_id) {
             overflow: hidden;
         }
 
-        /* Navigation Styles */
         .nav-link {
             position: relative;
             transition: all 0.3s ease;
@@ -101,7 +116,7 @@ if ($is_logged_in && $user_id) {
             left: 0;
             width: 0;
             height: 2px;
-            background: var(--primary);
+            background: var(--primary-pink);
             transition: width 0.3s ease;
         }
 
@@ -111,11 +126,10 @@ if ($is_logged_in && $user_id) {
         }
 
         .nav-link.active {
-            color: var(--primary);
+            color: var(--text-dark);
             font-weight: 600;
         }
 
-        /* Dropdown Menu Fixes */
         .dropdown {
             position: relative;
         }
@@ -124,9 +138,9 @@ if ($is_logged_in && $user_id) {
             position: absolute;
             top: 100%;
             right: 0;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 14px 34px rgba(43, 45, 66, 0.13);
             opacity: 0;
             visibility: hidden;
             transform: translateY(-10px);
@@ -134,8 +148,8 @@ if ($is_logged_in && $user_id) {
             z-index: 1000;
             min-width: 200px;
             padding: 8px 0;
-            border: 1px solid #e5e7eb;
-            margin-top: 8px; /* Add small gap to prevent accidental hiding */
+            border: 1px solid var(--primary-pink);
+            margin-top: 8px;
         }
 
         .dropdown:hover .dropdown-menu,
@@ -145,7 +159,6 @@ if ($is_logged_in && $user_id) {
             transform: translateY(0);
         }
 
-        /* Add invisible bridge to prevent dropdown from closing */
         .dropdown:hover .dropdown-menu::before {
             content: '';
             position: absolute;
@@ -160,10 +173,10 @@ if ($is_logged_in && $user_id) {
             display: flex;
             align-items: center;
             padding: 10px 16px;
-            color: #374151;
+            color: var(--text-dark);
             text-decoration: none;
             transition: all 0.2s ease;
-            border-bottom: 1px solid #f3f4f6;
+            border-bottom: 1px solid rgba(255, 179, 198, 0.45);
         }
 
         .dropdown-item:last-child {
@@ -171,8 +184,8 @@ if ($is_logged_in && $user_id) {
         }
 
         .dropdown-item:hover {
-            background: #f9fafb;
-            color: var(--primary);
+            background: var(--bg-light);
+            color: var(--text-dark);
             padding-left: 20px;
         }
 
@@ -182,16 +195,16 @@ if ($is_logged_in && $user_id) {
             text-align: center;
         }
 
-        /* Mobile menu */
         .mobile-menu {
             display: none;
             position: absolute;
             top: 100%;
             left: 0;
             right: 0;
-            background: white;
-            border-radius: 0 0 8px 8px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            background: #ffffff;
+            border-radius: 0 0 14px 14px;
+            border: 1px solid var(--primary-pink);
+            box-shadow: 0 14px 30px rgba(43, 45, 66, 0.12);
             z-index: 999;
         }
 
@@ -199,11 +212,55 @@ if ($is_logged_in && $user_id) {
             display: block;
         }
 
+        .text-gray-800,
+        .text-gray-700,
+        .text-gray-600,
+        .text-gray-500,
+        .text-purple-600,
+        .text-purple-700,
+        .text-purple-800,
+        .hover\:text-purple-600:hover,
+        .hover\:text-purple-700:hover,
+        .hover\:text-purple-800:hover,
+        .hover\:text-gray-600:hover,
+        .text-white {
+            color: var(--text-dark) !important;
+        }
+
+        .bg-white,
+        .bg-gray-50,
+        .bg-purple-100 {
+            background-color: #ffffff !important;
+        }
+
+        .from-purple-600,
+        .to-pink-600,
+        .hover\:from-purple-700:hover,
+        .hover\:to-pink-700:hover,
+        .bg-gradient-to-r {
+            background: var(--primary-pink) !important;
+            color: var(--text-dark) !important;
+        }
+
+        .rounded-md,
+        .rounded-full,
+        .dropdown-menu,
+        .mobile-menu {
+            border-radius: 14px !important;
+        }
+
+        button,
+        .button,
+        .btn,
+        .mobile-toggle {
+            border-radius: 12px;
+        }
+
         @media (max-width: 768px) {
             .nav-links {
                 display: none;
             }
-            
+
             .mobile-toggle {
                 display: block;
             }

@@ -1,111 +1,185 @@
+:root {
+  --bg-light: #F8F9FA;
+  --primary-pink: #FFB3C6;
+  --action-mint: #A8DADC;
+  --text-dark: #2B2D42;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   font-family: 'Segoe UI', sans-serif;
-  background-color: #f8f9fa;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255, 179, 198, 0.28), transparent 48%),
+    radial-gradient(circle at 85% 10%, rgba(168, 218, 220, 0.3), transparent 42%),
+    var(--bg-light);
+  color: var(--text-dark);
   margin: 0;
   padding: 0;
 }
 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+label,
+p,
+span,
+a {
+  color: var(--text-dark);
+}
+
 h2 {
   text-align: center;
-  color: #333;
   margin-bottom: 40px;
 }
 
+.card,
+.bg-white,
+.modal-content,
+.table-responsive,
+.swal2-popup {
+  background: #ffffff !important;
+  border: 1px solid var(--primary-pink) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 12px 34px rgba(43, 45, 66, 0.1) !important;
+}
+
 .card {
-  border: none;
-  border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-  background: #fff;
-  max-width: 400px; /* Kapsayıcı genişliği */
-  margin: 20px auto; /* Ortala ve üst-alt boşluk */
+  max-width: 400px;
+  margin: 20px auto;
   overflow: hidden;
-  transition: 0.3s;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .card:hover {
-  transform: scale(1.02);
+  transform: translateY(-3px);
+  box-shadow: 0 18px 40px rgba(43, 45, 66, 0.12) !important;
 }
 
-/* Fotoğraf stili */
-.card-img-top, .card img {
-  width: 100%;
-  height: auto;         /* Yükseklik otomatik */
-  max-height: 300px;    /* Maksimum yükseklik */
-  object-fit: contain;  /* Resmin tamamını göster */
-  border-radius: 8px 8px 0 0;
-  background-color: #f0f0f0; /* Boş alan için arka plan */
+/* Tailwind utility color remap for auth pages */
+.text-purple-600,
+.text-purple-700,
+.text-purple-800,
+.text-purple-500,
+.text-purple-100,
+.text-gray-800,
+.text-gray-700,
+.text-gray-600,
+.text-gray-500,
+.text-white {
+  color: var(--text-dark) !important;
 }
 
-.btn-success {
-  background: linear-gradient(90deg, #28a745 60%, #218838 100%);
-  border: none;
+.hover\:text-purple-600:hover,
+.hover\:text-purple-700:hover,
+.hover\:text-purple-800:hover,
+.hover\:text-white:hover,
+.hover\:text-gray-600:hover {
+  color: var(--text-dark) !important;
+}
+
+.bg-purple-100,
+.bg-red-50,
+.bg-gray-50,
+.bg-gray-100 {
+  background-color: var(--bg-light) !important;
+}
+
+.gradient-bg,
+.bg-gradient-to-r,
+.from-purple-600,
+.to-purple-700,
+.to-purple-800,
+.to-pink-600,
+.hover\:from-purple-700:hover,
+.hover\:to-purple-800:hover,
+.hover\:to-pink-700:hover {
+  background: var(--primary-pink) !important;
+  color: var(--text-dark) !important;
+}
+
+button,
+.btn,
+.btn-success,
+.swal2-confirm,
+button[type="submit"] {
+  background: var(--action-mint) !important;
+  color: var(--text-dark) !important;
+  border: none !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 24px rgba(43, 45, 66, 0.12) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+button:hover,
+.btn:hover,
+.btn-success:hover,
+.swal2-confirm:hover,
+button[type="submit"]:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(43, 45, 66, 0.14) !important;
+}
+
+input,
+select,
+textarea,
+.form-input {
+  border: 1px solid var(--primary-pink) !important;
+  border-radius: 12px !important;
+  background: #ffffff !important;
+  color: var(--text-dark) !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+.form-input:focus {
+  border-color: var(--action-mint) !important;
+  box-shadow: 0 0 0 4px rgba(168, 218, 220, 0.35) !important;
+  outline: none;
 }
 
 footer {
   padding: 20px;
-  background-color: #eee;
+  background-color: var(--primary-pink);
+  color: var(--text-dark);
   font-size: 14px;
-  color: #555;
 }
+
 /* --- İLAN FOTOĞRAFI GÖRÜNTÜLEME STİLİ --- */
-.card-img-top, .card img {
+.card-img-top,
+.card img {
   width: 100%;
   height: auto;
   max-height: 300px;
   object-fit: contain;
-  border-radius: 8px 8px 0 0;
-  background-color: #f0f0f0;
+  border-radius: 12px 12px 0 0;
+  background-color: var(--bg-light);
 }
 
 /* Yönetim paneli tablolarındaki resimler için */
 .table-responsive img {
-    max-width: 80px; /* Maksimum genişlik */
-    height: auto; /* Oranı koru */
-    display: block; /* Margin için */
-    margin: 0 auto; /* Ortala */
+  max-width: 80px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
 }
 
 /* Modal veya detay sayfasında büyük resimler için */
 .modal-body img,
 .ilan-detay-resim {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin: 0 auto;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
 }
 
-.swal2-popup {
-    border-radius: 0.5rem; /* Example: Rounded corners */
-    padding: 1rem;
-    /* You can set a fixed width if desired: */
-    /* width: 300px; */
-    background-color: #fff; /* Example: White background */
-    color: #333; /* Example: Dark text color */
-    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1); /* Example: Subtle shadow */
-}
-
-.swal2-title {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
-    color: #007bff; /* Example: Primary color for title */
-}
-
+.swal2-title,
 .swal2-content {
-    font-size: 1rem;
-    color: #555;
-}
-
-.swal2-confirm {
-    background-color: #007bff; /* Example: Primary button color */
-    color: #fff;
-    border: none;
-    border-radius: 0.3rem;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    font-size: 1rem;
-    margin-top: 1rem;
-}
-
-.swal2-confirm:hover {
-    background-color: #0056b3; /* Example: Darker shade on hover */
+  color: var(--text-dark) !important;
 }
