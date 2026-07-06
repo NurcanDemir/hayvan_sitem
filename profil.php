@@ -84,7 +84,7 @@ if (!$user_info) {
     exit();
 }
 
-$page_title = $is_own_profile ? "Profilim - Hayvan Dostları" : htmlspecialchars($user_info['kullanici_adi']) . " - Profil - Hayvan Dostları";
+$page_title = $is_own_profile ? "Profilim - Satın Alma Yuva Ol" : htmlspecialchars($user_info['kullanici_adi']) . " - Profil - Satın Alma Yuva Ol";
 include("includes/header.php");
 
 // Get user's ads count

@@ -10,10 +10,10 @@ class MailConfig {
     
     // From email settings
     const FROM_EMAIL = 'nurcanss.demirr1907@gmail.com';
-    const FROM_NAME = 'Hayvan Dostları';
+    const FROM_NAME = 'Satın Alma Yuva Ol';
     
     // Site settings
-    const SITE_NAME = 'Hayvan Dostları';
+    const SITE_NAME = 'Satın Alma Yuva Ol';
     const SITE_URL = 'http://localhost/hayvan_sitem';
     
     public static function getSMTPConfig() {

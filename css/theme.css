@@ -1,61 +1,65 @@
-/* Hayvan Dostları - Ana Tema Renkleri */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+/* Satın Alma Yuva Ol - Ana Tema Renkleri */
 :root {
-    --primary: #ba3689;
-    --primary-light: #d95bb0;
-    --primary-lighter: #e581c7;
-    --primary-lightest: #f0b1df;
-    --secondary: #374151;
-    --accent: #059669;
-    --warning: #ea580c;
-    --danger: #dc2626;
-    --success: #059669;
+    --bg-light: #F8F9FA;
+    --primary-pink: #FFB3C6;
+    --action-mint: #A8DADC;
+    --text-dark: #2B2D42;
 }
 
 /* Ana arka plan */
 body {
-    background: linear-gradient(135deg, var(--primary-lightest) 0%, #fdf2f8 30%, #f9fafb 70%, var(--primary-lightest) 100%);
+    font-family: 'Poppins', sans-serif;
+    color: var(--text-dark);
+    background:
+        radial-gradient(circle at 14% 16%, rgba(255, 179, 198, 0.28), transparent 45%),
+        radial-gradient(circle at 86% 10%, rgba(168, 218, 220, 0.28), transparent 40%),
+        var(--bg-light);
     min-height: 100vh;
 }
 
 /* Tailwind CSS özelleştirmeleri */
-.bg-primary { background-color: var(--primary) !important; }
-.bg-primary-light { background-color: var(--primary-light) !important; }
-.bg-primary-lighter { background-color: var(--primary-lighter) !important; }
-.bg-primary-lightest { background-color: var(--primary-lightest) !important; }
+.bg-primary { background-color: var(--action-mint) !important; }
+.bg-primary-light { background-color: var(--primary-pink) !important; }
+.bg-primary-lighter { background-color: #ffd2de !important; }
+.bg-primary-lightest { background-color: var(--bg-light) !important; }
 
-.text-primary { color: var(--primary) !important; }
-.text-primary-light { color: var(--primary-light) !important; }
-.text-primary-lighter { color: var(--primary-lighter) !important; }
+.text-primary { color: var(--text-dark) !important; }
+.text-primary-light { color: var(--text-dark) !important; }
+.text-primary-lighter { color: var(--text-dark) !important; }
 
-.border-primary { border-color: var(--primary) !important; }
-.border-primary-light { border-color: var(--primary-light) !important; }
-.border-primary-lighter { border-color: var(--primary-lighter) !important; }
+.border-primary { border-color: var(--primary-pink) !important; }
+.border-primary-light { border-color: var(--primary-pink) !important; }
+.border-primary-lighter { border-color: #ffd2de !important; }
 
 /* Hover durumları */
-.hover\:bg-primary:hover { background-color: var(--primary) !important; }
-.hover\:bg-primary-light:hover { background-color: var(--primary-light) !important; }
-.hover\:text-primary:hover { color: var(--primary) !important; }
+.hover\:bg-primary:hover { background-color: var(--action-mint) !important; }
+.hover\:bg-primary-light:hover { background-color: var(--primary-pink) !important; }
+.hover\:text-primary:hover { color: var(--text-dark) !important; }
 
 /* Focus durumları */
 .focus\:ring-primary:focus { 
-    --tw-ring-color: var(--primary) !important;
-    border-color: var(--primary) !important; 
+    --tw-ring-color: rgba(168, 218, 220, 0.5) !important;
+    border-color: var(--action-mint) !important; 
 }
-.focus\:border-primary:focus { border-color: var(--primary) !important; }
+.focus\:border-primary:focus { border-color: var(--action-mint) !important; }
 
 /* Özel buton stilleri */
 .btn-gradient {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    background: var(--action-mint);
     transition: all 0.3s ease;
     border: none;
-    color: white;
+    color: var(--text-dark);
     font-weight: 600;
+    border-radius: 14px;
+    box-shadow: 0 10px 24px rgba(43, 45, 66, 0.12);
 }
 
 .btn-gradient:hover {
-    background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+    background: var(--action-mint);
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(186, 54, 137, 0.4);
+    box-shadow: 0 14px 30px rgba(43, 45, 66, 0.14);
 }
 
 /* Kart hover efektleri */
@@ -65,60 +69,60 @@ body {
 
 .card-hover:hover {
     transform: translateY(-5px);
-    box-shadow: 0 20px 40px rgba(186, 54, 137, 0.15);
+    box-shadow: 0 20px 40px rgba(43, 45, 66, 0.12);
 }
 
 /* Kategori renkleri */
 .cat-sahiplendirme { 
-    background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
-    color: var(--primary);
-    border-color: var(--primary-lighter);
+    background: linear-gradient(135deg, #fff2f6 0%, #ffe0e9 100%);
+    color: var(--text-dark);
+    border-color: var(--primary-pink);
 }
 
 .cat-saglik { 
-    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-    color: var(--accent);
-    border-color: #6ee7b7;
+    background: linear-gradient(135deg, #eef9f9 0%, #ddf0f0 100%);
+    color: var(--text-dark);
+    border-color: var(--action-mint);
 }
 
 .cat-egitim { 
-    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-    color: #1d4ed8;
-    border-color: #93c5fd;
+    background: linear-gradient(135deg, #f8f9fa 0%, #edf1f4 100%);
+    color: var(--text-dark);
+    border-color: var(--primary-pink);
 }
 
 .cat-bagis { 
-    background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);
-    color: var(--warning);
-    border-color: #fdba74;
+    background: linear-gradient(135deg, #fff2f6 0%, #ffe0e9 100%);
+    color: var(--text-dark);
+    border-color: var(--primary-pink);
 }
 
 .cat-diger { 
-    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
-    color: var(--secondary);
-    border-color: #d1d5db;
+    background: linear-gradient(135deg, #f9fafb 0%, #f1f4f7 100%);
+    color: var(--text-dark);
+    border-color: var(--primary-pink);
 }
 
 /* Amber renkleri pembe ile değiştir */
-.bg-amber-600, .bg-amber-500 { background-color: var(--primary) !important; }
-.bg-amber-700 { background-color: var(--primary-light) !important; }
-.bg-amber-100 { background-color: var(--primary-lightest) !important; }
-.text-amber-700, .text-amber-600 { color: var(--primary) !important; }
-.text-amber-800 { color: var(--primary) !important; }
-.border-amber-600 { border-color: var(--primary) !important; }
+.bg-amber-600, .bg-amber-500 { background-color: var(--primary-pink) !important; }
+.bg-amber-700 { background-color: var(--primary-pink) !important; }
+.bg-amber-100 { background-color: #fff2f6 !important; }
+.text-amber-700, .text-amber-600 { color: var(--text-dark) !important; }
+.text-amber-800 { color: var(--text-dark) !important; }
+.border-amber-600 { border-color: var(--primary-pink) !important; }
 
 .hover\:bg-amber-600:hover, .hover\:bg-amber-700:hover { 
-    background-color: var(--primary-light) !important; 
+    background-color: var(--primary-pink) !important; 
 }
-.hover\:text-amber-700:hover { color: var(--primary-light) !important; }
+.hover\:text-amber-700:hover { color: var(--text-dark) !important; }
 
 /* Emerald renkleri pembe ile değiştir */
-.bg-emerald-600, .bg-emerald-500 { background-color: var(--primary) !important; }
-.bg-emerald-700 { background-color: var(--primary-light) !important; }
-.text-emerald-600 { color: var(--primary) !important; }
+.bg-emerald-600, .bg-emerald-500 { background-color: var(--action-mint) !important; }
+.bg-emerald-700 { background-color: var(--action-mint) !important; }
+.text-emerald-600 { color: var(--text-dark) !important; }
 
 .hover\:bg-emerald-600:hover, .hover\:bg-emerald-700:hover { 
-    background-color: var(--primary-light) !important; 
+    background-color: var(--action-mint) !important; 
 }
 
 /* Özel animasyonlar */
@@ -155,19 +159,19 @@ body {
 }
 
 .toast.success {
-    background: linear-gradient(135deg, var(--success) 0%, #10b981 100%);
-    color: white;
+    background: var(--action-mint);
+    color: var(--text-dark);
 }
 
 .toast.error {
-    background: linear-gradient(135deg, var(--danger) 0%, #ef4444 100%);
-    color: white;
+    background: var(--primary-pink);
+    color: var(--text-dark);
 }
 
 /* Form stilleri */
 input:focus, select:focus, textarea:focus {
-    border-color: var(--primary) !important;
-    box-shadow: 0 0 0 3px rgba(186, 54, 137, 0.1) !important;
+    border-color: var(--action-mint) !important;
+    box-shadow: 0 0 0 3px rgba(168, 218, 220, 0.35) !important;
 }
 
 /* Link stilleri */
@@ -176,22 +180,22 @@ a:not(.btn):not(.button) {
 }
 
 a:not(.btn):not(.button):hover {
-    color: var(--primary-light) !important;
+    color: var(--text-dark) !important;
 }
 
 /* Responsive düzenlemeler */
 @media (max-width: 768px) {
     .card-hover:hover {
         transform: none;
-        box-shadow: 0 4px 15px rgba(186, 54, 137, 0.1);
+        box-shadow: 0 4px 15px rgba(43, 45, 66, 0.1);
     }
 }
 
 /* Pagination stilleri */
 .pagination .active {
-    background-color: var(--primary) !important;
-    border-color: var(--primary) !important;
-    color: white !important;
+    background-color: var(--action-mint) !important;
+    border-color: var(--action-mint) !important;
+    color: var(--text-dark) !important;
 }
 
 /* Modal stilleri */
@@ -214,5 +218,5 @@ header {
 
 /* Footer özelleştirmeleri */
 footer {
-    background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+    background: var(--primary-pink);
 }
