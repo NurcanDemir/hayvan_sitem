@@ -51,6 +51,7 @@ if ($is_logged_in && $user_id) {
             --primary-pink: #FFB3C6;
             --action-mint: #A8DADC;
             --text-dark: #2B2D42;
+            --brand-highlight: #3A868F;
         }
 
         body {
@@ -110,7 +111,14 @@ if ($is_logged_in && $user_id) {
 
         .nav-link {
             position: relative;
+            display: inline-flex;
+            align-items: center;
+            white-space: nowrap;
             transition: all 0.3s ease;
+        }
+
+        .brand-logo {
+            white-space: nowrap;
         }
 
         .nav-link::after {
@@ -301,13 +309,13 @@ if ($is_logged_in && $user_id) {
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
                 <div class="flex items-center">
-                    <a href="index.php" class="flex items-center space-x-3">
+                    <a href="index.php" class="flex items-center space-x-3 brand-logo">
                         <div class="w-10 h-10 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center cta-secondary">
                             <i class="fas fa-paw text-white text-lg"></i>
                         </div>
                         <span class="text-xl font-bold text-gray-800">
                             <span>Satın Alma</span>
-                            <span class="ml-1" style="color: var(--action-mint);">Yuva Ol</span>
+                            <span class="ml-1" style="color: var(--brand-highlight);">Yuva Ol</span>
                         </span>
                     </a>
                 </div>

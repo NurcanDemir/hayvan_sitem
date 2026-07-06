@@ -79,6 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             --primary-pink: #FFB3C6;
             --action-mint: #A8DADC;
             --text-dark: #2B2D42;
+            --brand-highlight: #3A868F;
         }
         .gradient-bg {
             font-family: 'Poppins', sans-serif;
@@ -99,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <h1 class="text-3xl font-bold text-white mb-2">
                 <span>Satın Alma</span>
-                <span style="color: var(--action-mint);">Yuva Ol</span>
+                <span style="color: var(--brand-highlight);">Yuva Ol</span>
             </h1>
             <p class="text-purple-100">Hoş geldiniz!</p>
         </div>

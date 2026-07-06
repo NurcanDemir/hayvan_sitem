@@ -58,6 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             --primary-pink: #FFB3C6;
             --action-mint: #A8DADC;
             --text-dark: #2B2D42;
+            --brand-highlight: #3A868F;
         }
 
         body {
@@ -124,7 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="card-header text-center">
                 <h3>
                     <span>Satın Alma</span>
-                    <span style="color: var(--action-mint);">Yuva Ol</span>
+                    <span style="color: var(--brand-highlight);">Yuva Ol</span>
                     <span>Admin Giriş</span>
                 </h3>
             </div>

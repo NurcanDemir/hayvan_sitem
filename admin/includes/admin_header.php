@@ -25,6 +25,7 @@
             --primary-pink: #FFB3C6;
             --action-mint: #A8DADC;
             --text-dark: #2B2D42;
+            --brand-highlight: #3A868F;
         }
 
         body {
@@ -148,7 +149,7 @@
         <a class="text-white text-2xl font-bold text-center block mb-8 px-4 py-2 tracking-wide no-underline" href="admin_panel.php">
             <i class="fas fa-paw mr-2 text-yellow-400"></i>
             <span>Satın Alma</span>
-            <span style="color: var(--action-mint);">Yuva Ol</span>
+            <span style="color: var(--brand-highlight);">Yuva Ol</span>
         </a>
         
         <ul class="flex flex-col space-y-2 flex-grow"> <li class="w-full">
