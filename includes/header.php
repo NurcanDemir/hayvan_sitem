@@ -1,68 +1,66 @@
-
 <?php
-// header.php
-// Oturum henüz başlatılmadıysa başlat
+// filepath: c:\xampp\htdocs\hayvan_sitem\includes\header.php
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-// Aktif sayfa kontrolü
+// Get current page name for active nav highlighting
 $current_page = basename($_SERVER['PHP_SELF']);
-?>
 
+// Check if user is logged in
+$is_logged_in = isset($_SESSION['kullanici_id']);
+$kullanici_adi = $_SESSION['kullanici_adi'] ?? '';
+$user_role = $_SESSION['rol'] ?? 'kullanici';
+$user_id = $_SESSION['kullanici_id'] ?? null;
+
+// Get user profile photo if logged in
+$user_profile_photo = '';
+if ($is_logged_in && $user_id) {
+    include_once(__DIR__ . '/db.php');
+    $profile_sql = "SELECT profil_foto FROM kullanicilar WHERE id = ?";
+    $profile_stmt = $conn->prepare($profile_sql);
+    $profile_stmt->bind_param("i", $user_id);
+    $profile_stmt->execute();
+    $profile_result = $profile_stmt->get_result()->fetch_assoc();
+    $user_profile_photo = $profile_result['profil_foto'] ?? '';
+}
+?>
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= isset($page_title) ? $page_title : 'Yuva Ol - Hayvan Dostları Platformu' ?></title>
+    <title><?= $page_title ?? 'Hayvan Dostları' ?></title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <!-- SweetAlert2 CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    <!-- SweetAlert2 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
+    <!-- Custom CSS -->
     <style>
         :root {
             --primary: #ba3689;
-            --primary-light: #d95bb0;
-            --primary-lighter: #e581c7;
-            --primary-lightest: #f0b1df;
+            --primary-light: #d946ef;
+            --primary-lighter: #f3e8ff;
+            --primary-lightest: #faf5ff;
+            --secondary: #6366f1;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
         }
-
-        body {
-            background: linear-gradient(135deg, var(--primary-lightest) 0%, #fdf2f8 30%, #f9fafb 70%, var(--primary-lightest) 100%);
-            min-height: 100vh;
-        }
-
-        .bg-primary { background-color: var(--primary); }
-        .bg-primary-light { background-color: var(--primary-light); }
-        .bg-primary-lighter { background-color: var(--primary-lighter); }
-        .bg-primary-lightest { background-color: var(--primary-lightest); }
-        
-        .text-primary { color: var(--primary); }
-        .text-primary-light { color: var(--primary-light); }
-        .text-primary-lighter { color: var(--primary-lighter); }
-        
-        .border-primary { border-color: var(--primary); }
-        .border-primary-light { border-color: var(--primary-light); }
-        
-        .hover\:bg-primary:hover { background-color: var(--primary); }
-        .hover\:bg-primary-light:hover { background-color: var(--primary-light); }
-        .hover\:text-primary:hover { color: var(--primary); }
-        
-        .focus\:ring-primary:focus { --tw-ring-color: var(--primary); }
-        .focus\:border-primary:focus { border-color: var(--primary); }
 
         .btn-gradient {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
             transition: all 0.3s ease;
         }
-        
+
         .btn-gradient:hover {
-            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--secondary) 100%);
             transform: translateY(-1px);
             box-shadow: 0 10px 25px rgba(186, 54, 137, 0.3);
         }
@@ -70,262 +68,354 @@ $current_page = basename($_SERVER['PHP_SELF']);
         .card-hover {
             transition: all 0.3s ease;
         }
-        
+
         .card-hover:hover {
             transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(186, 54, 137, 0.15);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
         }
 
-        .gradient-success {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            transition: all 0.3s ease;
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
-        .gradient-success:hover {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
+        /* Navigation Styles */
         .nav-link {
+            position: relative;
             transition: all 0.3s ease;
-            font-weight: 600;
-            padding: 8px 0;
         }
 
-        .nav-link:hover {
-            color: var(--primary) !important;
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 100%;
         }
 
         .nav-link.active {
-            color: var(--primary) !important;
+            color: var(--primary);
+            font-weight: 600;
         }
 
-        /* Mobile Menu Styles */
-        .mobile-menu {
-            transition: all 0.3s ease;
-            transform: translateY(-10px);
+        /* Dropdown Menu Fixes */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
             opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            min-width: 200px;
+            padding: 8px 0;
+            border: 1px solid #e5e7eb;
+            margin-top: 8px; /* Add small gap to prevent accidental hiding */
+        }
+
+        .dropdown:hover .dropdown-menu,
+        .dropdown-menu:hover {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        /* Add invisible bridge to prevent dropdown from closing */
+        .dropdown:hover .dropdown-menu::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 0;
+            right: 0;
+            height: 12px;
+            background: transparent;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 16px;
+            color: #374151;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background: #f9fafb;
+            color: var(--primary);
+            padding-left: 20px;
+        }
+
+        .dropdown-item i {
+            margin-right: 8px;
+            width: 16px;
+            text-align: center;
+        }
+
+        /* Mobile menu */
+        .mobile-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            z-index: 999;
         }
 
         .mobile-menu.show {
-            transform: translateY(0);
-            opacity: 1;
+            display: block;
         }
 
-        /* Logo Text Gradient */
-        .logo-text {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .mobile-toggle {
+                display: block;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .mobile-toggle {
+                display: none;
+            }
         }
     </style>
 </head>
-<body>
-    <!-- Header -->
-    <header class="bg-white shadow-lg sticky top-0 z-50">
-        <nav class="max-w-7xl mx-auto px-6 py-4">
-            <div class="flex items-center justify-between">
-                <!-- Logo ve Site Adı -->
-                <div class="flex items-center space-x-3">
-                    <div class="text-3xl">🏠</div>
-                    <div class="flex flex-col">
-                        <h1 class="text-2xl font-bold logo-text">
-                            <a href="index.php" class="hover:opacity-80 transition-opacity">Yuva Ol</a>
-                        </h1>
-                        <span class="text-xs text-gray-500 -mt-1">Onlar İçin Yuva, Senin İçin Dostluk.</span>
-                    </div>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <a href="index.php" class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
+                            <i class="fas fa-paw text-white text-lg"></i>
+                        </div>
+                        <span class="text-xl font-bold text-gray-800">Hayvan Dostları</span>
+                    </a>
                 </div>
 
-                <!-- Desktop Navigation -->
-                <div class="hidden md:flex items-center space-x-8">
-                    <!-- Ana Menü -->
-                    <a href="index.php" class="nav-link <?= ($current_page == 'index.php') ? 'active text-primary' : 'text-stone-600' ?>">
-                        Ana Sayfa
+                <!-- Desktop Navigation Links -->
+                <div class="hidden md:flex items-center space-x-8 nav-links">
+                    <a href="index.php" class="nav-link text-gray-600 hover:text-purple-600 px-3 py-2 <?= $current_page == 'index.php' ? 'active' : '' ?>">
+                        <i class="fas fa-home mr-2"></i>Ana Sayfa
                     </a>
-                    <a href="etkinlikler.php" class="nav-link <?= ($current_page == 'etkinlikler.php') ? 'active text-primary' : 'text-stone-600' ?>">
-                        Etkinlikler
+                    <a href="ilanlar.php" class="nav-link text-gray-600 hover:text-purple-600 px-3 py-2 <?= $current_page == 'ilanlar.php' ? 'active' : '' ?>">
+                        <i class="fas fa-list mr-2"></i>İlanlar
                     </a>
-                    <a href="ilanlar.php" class="nav-link <?= ($current_page == 'ilanlar.php') ? 'active text-primary' : 'text-stone-600' ?>">
-                        İlanlar
+                    <a href="ilan_ekle.php" class="nav-link text-gray-600 hover:text-purple-600 px-3 py-2 <?= $current_page == 'ilan_ekle.php' ? 'active' : '' ?>">
+                        <i class="fas fa-plus mr-2"></i>İlan Ekle
                     </a>
-                    
-                    <?php if (isset($_SESSION['kullanici_id'])): ?>
-                        <!-- İlan Ver Butonu -->
-                        <a href="ilan_ekle.php" class="gradient-success text-white px-4 py-2 rounded-md font-semibold transition duration-300">
-                            <i class="fas fa-plus mr-2"></i>İlan Ver
-                        </a>
-                        
-                        <!-- Kullanıcı Menüleri -->
-                        <a href="ilanlarim.php" class="nav-link <?= ($current_page == 'ilanlarim.php') ? 'active text-primary' : 'text-stone-600' ?>">
-                            İlanlarım
-                        </a>
-                        <a href="favorilerim.php" class="nav-link <?= ($current_page == 'favorilerim.php') ? 'active text-primary' : 'text-stone-600' ?>">
-                            Favorilerim
-                        </a>
-                        <a href="taleplerim.php" class="nav-link <?= ($current_page == 'taleplerim.php') ? 'active text-primary' : 'text-stone-600' ?>">
-                            Taleplerim
-                        </a>
-                        <a href="gelen_talepler.php" class="nav-link <?= ($current_page == 'gelen_talepler.php') ? 'active text-primary' : 'text-stone-600' ?> relative">
-                            Gelen Talepler
-                            <?php
-                            // Okunmamış talep sayısını güvenli şekilde göster
-                            $unread_count = 0;
-                            try {
-                                if (isset($conn) && $conn) {
-                                    $unread_result = $conn->query("SELECT COUNT(*) as count FROM sahiplenme_istekleri WHERE ilan_sahibi_kullanici_id = {$_SESSION['kullanici_id']} AND durum = 'beklemede'");
-                                    if ($unread_result) {
-                                        $unread_count = $unread_result->fetch_assoc()['count'] ?? 0;
-                                    }
-                                }
-                            } catch (Exception $e) {
-                                $unread_count = 0;
-                            }
+                    <a href="etkinlikler.php" class="nav-link text-gray-600 hover:text-purple-600 px-3 py-2 <?= $current_page == 'etkinlikler.php' ? 'active' : '' ?>">
+                        <i class="fas fa-calendar mr-2"></i>Etkinlikler
+                    </a>
+                    <a href="barinaklar.php" class="nav-link text-gray-600 hover:text-purple-600 px-3 py-2 <?= $current_page == 'barinaklar.php' ? 'active' : '' ?>">
+                        <i class="fas fa-building mr-2"></i>Barınaklar
+                    </a>
+                    <a href="hakkimizda.php" class="nav-link text-gray-600 hover:text-purple-600 px-3 py-2 <?= $current_page == 'hakkimizda.php' ? 'active' : '' ?>">
+                        <i class="fas fa-info-circle mr-2"></i>Hakkımızda
+                    </a>
+                </div>
+
+                <!-- User Section -->
+                <div class="flex items-center space-x-4">
+                    <?php if ($is_logged_in): ?>
+                        <!-- User Dropdown -->
+                        <div class="dropdown">
+                            <button class="flex items-center space-x-2 text-gray-600 hover:text-purple-600 focus:outline-none">
+                                <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center overflow-hidden">
+                                    <?php if (!empty($user_profile_photo) && file_exists('uploads/profiles/' . $user_profile_photo)): ?>
+                                        <img src="uploads/profiles/<?= htmlspecialchars($user_profile_photo) ?>" 
+                                             alt="Profil Fotoğrafı" class="w-full h-full object-cover">
+                                    <?php else: ?>
+                                        <i class="fas fa-user text-purple-600"></i>
+                                    <?php endif; ?>
+                                </div>
+                                <a href="profil.php" class="hidden sm:block font-medium hover:text-purple-600"><?= htmlspecialchars($kullanici_adi) ?></a>
+                                <i class="fas fa-chevron-down text-sm"></i>
+                            </button>
                             
-                            if ($unread_count > 0): ?>
-                                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold"><?= $unread_count ?></span>
-                            <?php endif; ?>
-                        </a>
-                        
-                        <!-- Kullanıcı Bilgisi ve Çıkış -->
-                        <div class="flex items-center space-x-4">
-                            <span class="text-stone-600 font-medium">
-                                Hoş geldin, <span class="text-primary font-semibold"><?= htmlspecialchars($_SESSION['kullanici_adi']) ?></span>!
-                            </span>
-                            <a href="cikis.php" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md font-semibold transition duration-300">
-                                <i class="fas fa-sign-out-alt mr-2"></i>Çıkış
-                            </a>
+                            <div class="dropdown-menu">
+                                <a href="profil.php" class="dropdown-item">
+                                    <i class="fas fa-user"></i>
+                                    Profilim
+                                </a>
+                                <a href="ilanlarim.php" class="dropdown-item">
+                                    <i class="fas fa-list-alt"></i>
+                                    İlanlarım
+                                </a>
+                                <a href="favorilerim.php" class="dropdown-item">
+                                    <i class="fas fa-heart"></i>
+                                    Favorilerim
+                                </a>
+                                <a href="sahiplenme_isteklerim.php" class="dropdown-item">
+                                    <i class="fas fa-handshake"></i>
+                                    Sahiplenme İsteklerim
+                                </a>
+                                <a href="mesajlar.php" class="dropdown-item">
+                                    <i class="fas fa-comments"></i>
+                                    Mesajlarım
+                                </a>
+                                <a href="gelen_talepler.php" class="dropdown-item">
+                                    <i class="fas fa-inbox"></i>
+                                    Gelen Talepler
+                                </a>
+                                <?php if ($user_role === 'admin'): ?>
+                                    <a href="admin/admin_panel.php" class="dropdown-item">
+                                        <i class="fas fa-cog"></i>
+                                        Yönetim Paneli
+                                    </a>
+                                <?php endif; ?>
+                                <div class="border-t border-gray-200 my-2"></div>
+                                <a href="cikis.php" class="dropdown-item text-red-600 hover:text-red-700">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    Çıkış Yap
+                                </a>
+                            </div>
                         </div>
                     <?php else: ?>
-                        <!-- Giriş ve Kayıt Butonları -->
-                        <a href="giris.php" class="btn-gradient text-white px-4 py-2 rounded-md font-semibold transition duration-300">
-                            <i class="fas fa-sign-in-alt mr-2"></i>Giriş Yap
-                        </a>
-                        <a href="kayit.php" class="border border-primary text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-md font-semibold transition duration-300">
-                            <i class="fas fa-user-plus mr-2"></i>Kayıt Ol
-                        </a>
+                        <!-- Login/Register Buttons -->
+                        <div class="flex items-center space-x-2">
+                            <a href="giris.php" class="text-purple-600 hover:text-purple-700 font-medium px-3 py-2 rounded-md transition-colors">
+                                <i class="fas fa-sign-in-alt mr-1"></i>Giriş
+                            </a>
+                            <a href="kayit.php" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-md font-medium hover:from-purple-700 hover:to-pink-700 transition-all duration-200">
+                                <i class="fas fa-user-plus mr-1"></i>Kayıt Ol
+                            </a>
+                        </div>
                     <?php endif; ?>
-                </div>
 
-                <!-- Mobile Menu Button -->
-                <div class="md:hidden">
-                    <button id="mobile-menu-btn" class="text-gray-600 hover:text-primary focus:outline-none transition duration-300">
-                        <i class="fas fa-bars text-2xl"></i>
+                    <!-- Mobile Menu Toggle -->
+                    <button class="mobile-toggle md:hidden text-gray-600 hover:text-purple-600 focus:outline-none" onclick="toggleMobileMenu()">
+                        <i class="fas fa-bars text-xl"></i>
                     </button>
                 </div>
             </div>
 
             <!-- Mobile Menu -->
-            <div id="mobile-menu" class="hidden md:hidden mobile-menu">
-                <div class="mt-4 pt-4 border-t border-gray-200">
-                    <div class="flex flex-col space-y-3">
-                        <!-- Ana Menü - Mobile -->
-                        <a href="index.php" class="nav-link <?= ($current_page == 'index.php') ? 'active text-primary' : 'text-stone-600' ?> block px-4 py-3 rounded-md hover:bg-gray-50">
-                            <i class="fas fa-home mr-3"></i>Ana Sayfa
-                        </a>
-                        <a href="etkinlikler.php" class="nav-link <?= ($current_page == 'etkinlikler.php') ? 'active text-primary' : 'text-stone-600' ?> block px-4 py-3 rounded-md hover:bg-gray-50">
-                            <i class="fas fa-calendar-alt mr-3"></i>Etkinlikler
-                        </a>
-                        <a href="ilanlar.php" class="nav-link <?= ($current_page == 'ilanlar.php') ? 'active text-primary' : 'text-stone-600' ?> block px-4 py-3 rounded-md hover:bg-gray-50">
-                            <i class="fas fa-list mr-3"></i>İlanlar
-                        </a>
-                        
-                        <?php if (isset($_SESSION['kullanici_id'])): ?>
-                            <!-- İlan Ver - Mobile -->
-                            <a href="ilan_ekle.php" class="gradient-success text-white px-4 py-3 rounded-md font-semibold transition duration-300 text-center block my-3">
-                                <i class="fas fa-plus mr-2"></i>İlan Ver
+            <div id="mobileMenu" class="mobile-menu md:hidden">
+                <div class="px-4 py-3 space-y-3">
+                    <a href="index.php" class="block text-gray-600 hover:text-purple-600 py-2 <?= $current_page == 'index.php' ? 'text-purple-600 font-semibold' : '' ?>">
+                        <i class="fas fa-home mr-2"></i>Ana Sayfa
+                    </a>
+                    <a href="ilanlar.php" class="block text-gray-600 hover:text-purple-600 py-2 <?= $current_page == 'ilanlar.php' ? 'text-purple-600 font-semibold' : '' ?>">
+                        <i class="fas fa-list mr-2"></i>İlanlar
+                    </a>
+                    <a href="ilan_ekle.php" class="block text-gray-600 hover:text-purple-600 py-2 <?= $current_page == 'ilan_ekle.php' ? 'text-purple-600 font-semibold' : '' ?>">
+                        <i class="fas fa-plus mr-2"></i>İlan Ekle
+                    </a>
+                    <a href="etkinlikler.php" class="block text-gray-600 hover:text-purple-600 py-2 <?= $current_page == 'etkinlikler.php' ? 'text-purple-600 font-semibold' : '' ?>">
+                        <i class="fas fa-calendar mr-2"></i>Etkinlikler
+                    </a>
+                    <a href="barinaklar.php" class="block text-gray-600 hover:text-purple-600 py-2 <?= $current_page == 'barinaklar.php' ? 'text-purple-600 font-semibold' : '' ?>">
+                        <i class="fas fa-building mr-2"></i>Barınaklar
+                    </a>
+                    <a href="hakkimizda.php" class="block text-gray-600 hover:text-purple-600 py-2 <?= $current_page == 'hakkimizda.php' ? 'text-purple-600 font-semibold' : '' ?>">
+                        <i class="fas fa-info-circle mr-2"></i>Hakkımızda
+                    </a>
+                    
+                    <?php if (!$is_logged_in): ?>
+                        <div class="border-t border-gray-200 pt-3 space-y-2">
+                            <a href="giris.php" class="block text-purple-600 hover:text-purple-700 font-medium py-2">
+                                <i class="fas fa-sign-in-alt mr-2"></i>Giriş Yap
                             </a>
-                            
-                            <!-- Kullanıcı Menüleri - Mobile -->
-                            <div class="bg-gray-50 rounded-lg p-4 my-4">
-                                <div class="text-sm font-semibold text-gray-600 mb-3 flex items-center">
-                                    <i class="fas fa-user mr-2 text-primary"></i>
-                                    Hoş geldin, <span class="text-primary"><?= htmlspecialchars($_SESSION['kullanici_adi']) ?></span>!
-                                </div>
-                                
-                                <div class="space-y-2">
-                                    <a href="ilanlarim.php" class="nav-link <?= ($current_page == 'ilanlarim.php') ? 'active text-primary' : 'text-stone-600' ?> block px-3 py-2 rounded-md hover:bg-white">
-                                        <i class="fas fa-clipboard-list mr-3"></i>İlanlarım
-                                    </a>
-                                    <a href="favorilerim.php" class="nav-link <?= ($current_page == 'favorilerim.php') ? 'active text-primary' : 'text-stone-600' ?> block px-3 py-2 rounded-md hover:bg-white">
-                                        <i class="fas fa-heart mr-3"></i>Favorilerim
-                                    </a>
-                                    <a href="taleplerim.php" class="nav-link <?= ($current_page == 'taleplerim.php') ? 'active text-primary' : 'text-stone-600' ?> block px-3 py-2 rounded-md hover:bg-white">
-                                        <i class="fas fa-paper-plane mr-3"></i>Taleplerim
-                                    </a>
-                                    <a href="gelen_talepler.php" class="nav-link <?= ($current_page == 'gelen_talepler.php') ? 'active text-primary' : 'text-stone-600' ?> block px-3 py-2 rounded-md hover:bg-white flex items-center justify-between">
-                                        <span><i class="fas fa-inbox mr-3"></i>Gelen Talepler</span>
-                                        <?php if (isset($unread_count) && $unread_count > 0): ?>
-                                            <span class="bg-red-500 text-white text-xs rounded-full px-2 py-1 font-bold"><?= $unread_count ?></span>
-                                        <?php endif; ?>
-                                    </a>
-                                </div>
-                            </div>
-                            
-                            <!-- Çıkış - Mobile -->
-                            <a href="cikis.php" class="bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-md font-semibold transition duration-300 text-center block">
-                                <i class="fas fa-sign-out-alt mr-2"></i>Çıkış Yap
+                            <a href="kayit.php" class="block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-md font-medium text-center">
+                                <i class="fas fa-user-plus mr-2"></i>Kayıt Ol
                             </a>
-                        <?php else: ?>
-                            <!-- Giriş ve Kayıt - Mobile -->
-                            <div class="space-y-3 pt-3">
-                                <a href="giris.php" class="btn-gradient text-white px-4 py-3 rounded-md font-semibold transition duration-300 text-center block">
-                                    <i class="fas fa-sign-in-alt mr-2"></i>Giriş Yap
-                                </a>
-                                <a href="kayit.php" class="border border-primary text-primary hover:bg-primary hover:text-white px-4 py-3 rounded-md font-semibold transition duration-300 text-center block">
-                                    <i class="fas fa-user-plus mr-2"></i>Kayıt Ol
-                                </a>
-                            </div>
-                        <?php endif; ?>
-                    </div>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
-        </nav>
-    </header>
+        </div>
+    </nav>
 
     <script>
-        // Mobile menu toggle
-        document.addEventListener('DOMContentLoaded', function() {
-            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-            const mobileMenu = document.getElementById('mobile-menu');
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('show');
+        }
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const mobileToggle = document.querySelector('.mobile-toggle');
             
-            if (mobileMenuBtn && mobileMenu) {
-                const menuIcon = mobileMenuBtn.querySelector('i');
-                
-                mobileMenuBtn.addEventListener('click', function() {
-                    const isHidden = mobileMenu.classList.contains('hidden');
-                    
-                    if (isHidden) {
-                        mobileMenu.classList.remove('hidden');
-                        setTimeout(() => {
-                            mobileMenu.classList.add('show');
-                        }, 10);
-                        menuIcon.classList.remove('fa-bars');
-                        menuIcon.classList.add('fa-times');
-                    } else {
-                        mobileMenu.classList.remove('show');
-                        setTimeout(() => {
-                            mobileMenu.classList.add('hidden');
-                        }, 300);
-                        menuIcon.classList.remove('fa-times');
-                        menuIcon.classList.add('fa-bars');
-                    }
-                });
-                
-                // Sayfa dışına tıklandığında menüyü kapat
-                document.addEventListener('click', function(e) {
-                    if (!mobileMenuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
-                        if (!mobileMenu.classList.contains('hidden')) {
-                            mobileMenu.classList.remove('show');
-                            setTimeout(() => {
-                                mobileMenu.classList.add('hidden');
-                            }, 300);
-                            menuIcon.classList.remove('fa-times');
-                            menuIcon.classList.add('fa-bars');
-                        }
-                    }
-                });
+            if (!mobileMenu.contains(event.target) && !mobileToggle.contains(event.target)) {
+                mobileMenu.classList.remove('show');
             }
+        });
+
+        // Enhanced dropdown functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdowns = document.querySelectorAll('.dropdown');
+            
+            dropdowns.forEach(dropdown => {
+                const menu = dropdown.querySelector('.dropdown-menu');
+                let timeout;
+
+                dropdown.addEventListener('mouseenter', () => {
+                    clearTimeout(timeout);
+                    menu.style.opacity = '1';
+                    menu.style.visibility = 'visible';
+                    menu.style.transform = 'translateY(0)';
+                });
+
+                dropdown.addEventListener('mouseleave', () => {
+                    timeout = setTimeout(() => {
+                        menu.style.opacity = '0';
+                        menu.style.visibility = 'hidden';
+                        menu.style.transform = 'translateY(-10px)';
+                    }, 300); // Increased delay to 300ms
+                });
+
+                // Keep dropdown open when hovering over menu
+                menu.addEventListener('mouseenter', () => {
+                    clearTimeout(timeout);
+                });
+
+                menu.addEventListener('mouseleave', () => {
+                    timeout = setTimeout(() => {
+                        menu.style.opacity = '0';
+                        menu.style.visibility = 'hidden';
+                        menu.style.transform = 'translateY(-10px)';
+                    }, 300); // Increased delay to 300ms
+                });
+            });
         });
     </script>

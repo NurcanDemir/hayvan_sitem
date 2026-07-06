@@ -2,536 +2,652 @@
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
+
+$page_title = "Barınaklar - Hayvan Dostları";
 include("includes/db.php");
+include("includes/header.php"); // Use the standardized header
 
-// Filtreleme parametrelerini al
-$il_id = isset($_GET['il_id']) ? (int)$_GET['il_id'] : 0;
-$ilce_id = isset($_GET['ilce_id']) ? (int)$_GET['ilce_id'] : 0;
+// Filtreleme için parametreler
+$where = "WHERE b.aktif = 1";
+$params = [];
+$types = "";
 
-// İl ve İlçe listelerini getir
-$iller = $conn->query("SELECT * FROM il ORDER BY ad ASC");
-$ilceler_array = [];
-if ($iller) {
-    $ilceler_result = $conn->query("SELECT * FROM ilce ORDER BY ad ASC");
-    if ($ilceler_result) {
-        while ($ilce = $ilceler_result->fetch_assoc()) {
-            $ilceler_array[$ilce['il_id']][] = $ilce;
-        }
-    }
+if (!empty($_GET['il_id'])) {
+    $where .= " AND b.il_id = ?";
+    $params[] = $_GET['il_id'];
+    $types .= "i";
 }
 
-// Filtreleme koşullarını oluştur
-$where_conditions = ["b.aktif = 1"];
-if ($il_id > 0) {
-    $where_conditions[] = "b.il_id = " . $il_id;
+if (!empty($_GET['search'])) {
+    $where .= " AND (b.ad LIKE ? OR b.adres LIKE ? OR il.ad LIKE ?)";
+    $search_term = "%" . $_GET['search'] . "%";
+    $params[] = $search_term;
+    $params[] = $search_term;
+    $params[] = $search_term;
+    $types .= "sss";
 }
-if ($ilce_id > 0) {
-    $where_conditions[] = "b.ilce_id = " . $ilce_id;
+
+// Sayfalama için
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$limit = 12;
+$offset = ($page - 1) * $limit;
+
+// Toplam kayıt sayısı
+$count_sql = "SELECT COUNT(*) as total FROM hayvan_barinaklari b 
+               LEFT JOIN il ON b.il_id = il.id 
+               $where";
+$count_stmt = $conn->prepare($count_sql);
+if ($params) $count_stmt->bind_param($types, ...$params);
+$count_stmt->execute();
+$total_records = $count_stmt->get_result()->fetch_assoc()['total'];
+$total_pages = ceil($total_records / $limit);
+
+// Barınakları getir
+$sql = "SELECT b.*, il.ad as il_adi, ilce.ad as ilce_adi
+        FROM hayvan_barinaklari b 
+        LEFT JOIN il ON b.il_id = il.id
+        LEFT JOIN ilce ON b.ilce_id = ilce.id
+        $where
+        ORDER BY b.ad ASC
+        LIMIT ? OFFSET ?";
+
+$stmt = $conn->prepare($sql);
+if ($params) {
+    $params[] = $limit;
+    $params[] = $offset;
+    $types .= "ii";
+    $stmt->bind_param($types, ...$params);
+} else {
+    $stmt->bind_param("ii", $limit, $offset);
 }
-$where_clause = implode(' AND ', $where_conditions);
+$stmt->execute();
+$result = $stmt->get_result();
 
-// Barınakları getir - Filtreleme ile
-$barinaklar_sql = "SELECT DISTINCT b.id, b.ad, b.adres, b.telefon, b.email, b.aciklama, 
-                   b.il_id, b.ilce_id, b.website, b.latitude, b.longitude,
-                   il.ad as il_adi, ilce.ad as ilce_adi, b.created_at
-                   FROM hayvan_barinaklari b
-                   LEFT JOIN il ON b.il_id = il.id
-                   LEFT JOIN ilce ON b.ilce_id = ilce.id
-                   WHERE $where_clause
-                   ORDER BY b.ad ASC";
+// İller listesi
+$iller = [];
+$il_result = $conn->query("SELECT * FROM il ORDER BY ad ASC");
+while($row = $il_result->fetch_assoc()) $iller[] = $row;
 
-$barinaklar_result = $conn->query($barinaklar_sql);
-
-// İstatistikler için ayrı sorgular
-$toplam_barinak = $conn->query("SELECT COUNT(DISTINCT id) as total FROM hayvan_barinaklari WHERE aktif = 1")->fetch_assoc()['total'];
-
-// Hayvan sayısını ilanlardan hesaplayalım
-$toplam_hayvan_result = $conn->query("SELECT COUNT(*) as total FROM ilanlar WHERE durum = 'aktif'");
-$toplam_hayvan = $toplam_hayvan_result ? $toplam_hayvan_result->fetch_assoc()['total'] : 0;
-
-// Sahiplenen hayvan sayısı
-$sahiplenen_result = $conn->query("SELECT COUNT(*) as total FROM ilanlar WHERE durum = 'sahiplenildi'");
-$sahiplenen_sayisi = $sahiplenen_result ? $sahiplenen_result->fetch_assoc()['total'] : 0;
-
-// Filtrelenen barınak sayısı
-$filtrelenen_barinak = $barinaklar_result ? $barinaklar_result->num_rows : 0;
+$user_id = $_SESSION['kullanici_id'] ?? null;
 ?>
 
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hayvan Barınakları - Hayvan Dostları</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    /* Barınaklar sayfası özel stilleri */
+    .shelter-card {
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
     
-    <!-- SweetAlert2 CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    <!-- SweetAlert2 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+    .shelter-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary);
+        box-shadow: 0 20px 25px -5px rgba(186, 54, 137, 0.1), 0 10px 10px -5px rgba(186, 54, 137, 0.04);
+    }
     
-    <style>
-        :root {
-            --primary: #ba3689;
-            --primary-light: #d95bb0;
-            --primary-lighter: #e581c7;
-            --primary-lightest: #f0b1df;
-        }
+    .contact-btn {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        transition: all 0.3s ease;
+    }
+    
+    .contact-btn:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    
+    .search-container {
+        background: linear-gradient(135deg, #f8fafc 0%, #fdf2f8 50%, #fef7ff 100%);
+        color: #374151;
+    }
+    
+    .search-container h1 {
+        color: #6b21a8;
+    }
+    
+    .search-container p {
+        color: #6b7280;
+    }
+    
+    .search-container label {
+        color: #4b5563;
+        font-weight: 600;
+    }
+    
+    .stats-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+    }
 
-        body {
-            background: linear-gradient(135deg, var(--primary-lightest) 0%, #fdf2f8 30%, #f9fafb 70%, var(--primary-lightest) 100%);
-            min-height: 100vh;
-        }
+    /* Pagination styles */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+    }
 
-        .bg-primary { background-color: var(--primary); }
-        .bg-primary-light { background-color: var(--primary-light); }
-        .bg-primary-lighter { background-color: var(--primary-lighter); }
-        .bg-primary-lightest { background-color: var(--primary-lightest); }
-        
-        .text-primary { color: var(--primary); }
-        .hover\:text-primary:hover { color: var(--primary); }
-        .border-primary { border-color: var(--primary); }
-        .focus\:ring-primary:focus { --tw-ring-color: var(--primary); }
-        .focus\:border-primary:focus { border-color: var(--primary); }
+    .pagination a, .pagination span {
+        padding: 0.5rem 1rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.375rem;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
 
-        .btn-gradient {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            transition: all 0.3s ease;
-        }
-        
-        .btn-gradient:hover {
-            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 10px 25px rgba(186, 54, 137, 0.3);
-        }
+    .pagination a:hover {
+        background-color: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
 
-        .card-hover {
-            transition: all 0.3s ease;
-        }
-        
-        .card-hover:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(186, 54, 137, 0.15);
-        }
-    </style>
-</head>
-<body>
-    <!-- Header -->
-    <header class="bg-white shadow-lg sticky top-0 z-50">
-        <nav class="max-w-7xl mx-auto px-6 py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <div class="text-3xl">🐾</div>
-                    <h1 class="text-2xl font-bold text-primary">
-                        <a href="index.php">Hayvan Dostları</a>
-                    </h1>
-                </div>
-                <div class="hidden md:flex items-center space-x-8">
-                    <a href="index.php" class="text-stone-600 hover:text-primary font-semibold transition duration-300">Ana Sayfa</a>
-                    <a href="#" class="text-primary font-semibold">Barınaklar</a>
-                    <a href="etkinlikler.php" class="text-stone-600 hover:text-primary font-semibold transition duration-300">Etkinlikler</a>
-                    <a href="ilanlar.php" class="text-stone-600 hover:text-primary font-semibold transition duration-300">İlanlar</a>
+    .pagination .current {
+        background-color: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+</style>
+
+<!-- Ana İçerik -->
+<main class="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-purple-50">
+    <!-- Hero Bölümü -->
+    <div class="search-container py-16">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-12">
+                <h1 class="text-5xl font-bold mb-6">
+                    <i class="fas fa-building mr-4 text-purple-600"></i>
+                    Hayvan Barınakları
+                </h1>
+                <p class="text-xl mb-8 max-w-3xl mx-auto">
+                    Türkiye genelindeki hayvan barınaklarını keşfedin. Onlara destek olun, gönüllü olun veya sahiplendirme yapın.
+                </p>
+            </div>
+
+            <!-- Arama ve Filtre -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 mb-8 shadow-lg">
+                <form method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block font-medium mb-2">
+                            <i class="fas fa-search mr-2 text-purple-600"></i>Barınak Ara
+                        </label>
+                        <input type="text" name="search" value="<?= htmlspecialchars($_GET['search'] ?? '') ?>" 
+                               placeholder="Barınak adı, şehir veya adres..."
+                               class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-gray-800">
+                    </div>
                     
-                    <?php if (isset($_SESSION['kullanici_id'])): ?>
-                        <a href="ilan_ekle.php" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-md font-semibold transition duration-300">
-                            <i class="fas fa-plus mr-2"></i>İlan Ver
+                    <div>
+                        <label class="block font-medium mb-2">
+                            <i class="fas fa-map-marker-alt mr-2 text-purple-600"></i>İl Seçin
+                        </label>
+                        <select name="il_id" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-gray-800">
+                            <option value="">Tüm İller</option>
+                            <?php foreach($iller as $il): ?>
+                                <option value="<?= $il['id'] ?>" <?= (@$_GET['il_id']==$il['id'])?'selected':'' ?>>
+                                    <?= htmlspecialchars($il['ad']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    
+                    <div class="flex items-end">
+                        <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg">
+                            <i class="fas fa-search mr-2"></i>Ara
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- İstatistikler -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <?php
+                $total_shelters = $conn->query("SELECT COUNT(*) as total FROM hayvan_barinaklari WHERE aktif = 1")->fetch_assoc()['total'];
+                $total_cities = $conn->query("SELECT COUNT(DISTINCT il_id) as total FROM hayvan_barinaklari WHERE aktif = 1")->fetch_assoc()['total'];
+                
+                // Check if kapasite column exists before using it
+                $capacity_query = "SHOW COLUMNS FROM hayvan_barinaklari LIKE 'kapasite'";
+                $capacity_check = $conn->query($capacity_query);
+                
+                if ($capacity_check && $capacity_check->num_rows > 0) {
+                    $total_capacity = $conn->query("SELECT SUM(kapasite) as total FROM hayvan_barinaklari WHERE aktif = 1 AND kapasite IS NOT NULL")->fetch_assoc()['total'] ?? 0;
+                } else {
+                    // If kapasite column doesn't exist, show total animals instead
+                    $total_capacity_result = $conn->query("SELECT COUNT(*) as total FROM hayvanlar WHERE durum = 'sahiplendirilmedi'");
+                    $total_capacity = $total_capacity_result ? $total_capacity_result->fetch_assoc()['total'] : 0;
+                }
+                ?>
+                
+                <div class="stats-card rounded-xl p-6 text-center">
+                    <div class="text-3xl font-bold text-primary mb-2"><?= $total_shelters ?></div>
+                    <div class="text-gray-600">Aktif Barınak</div>
+                </div>
+                
+                <div class="stats-card rounded-xl p-6 text-center">
+                    <div class="text-3xl font-bold text-purple-600 mb-2"><?= $total_cities ?></div>
+                    <div class="text-gray-600">Şehir</div>
+                </div>
+                
+                <div class="stats-card rounded-xl p-6 text-center">
+                    <div class="text-3xl font-bold text-pink-600 mb-2"><?= number_format($total_capacity) ?></div>
+                    <div class="text-gray-600">
+                        <?php if ($capacity_check && $capacity_check->num_rows > 0): ?>
+                            Toplam Kapasite
+                        <?php else: ?>
+                            Sahipsiz Hayvan
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barınaklar Listesi -->
+    <div class="max-w-7xl mx-auto px-6 py-12">
+        <!-- Sonuç Bilgisi -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">
+                    <i class="fas fa-list mr-3 text-primary"></i>
+                    Barınaklar
+                </h2>
+                <p class="text-gray-600 mt-1">
+                    <?= $total_records ?> barınak bulundu
+                    <?php if (!empty($_GET['search']) || !empty($_GET['il_id'])): ?>
+                        - Filtreler aktif
+                    <?php endif; ?>
+                </p>
+            </div>
+            
+            <?php if (!empty($_GET['search']) || !empty($_GET['il_id'])): ?>
+                <a href="barinaklar.php" class="text-primary hover:text-primary-dark transition-colors">
+                    <i class="fas fa-times mr-1"></i>Filtreleri Temizle
+                </a>
+            <?php endif; ?>
+        </div>
+
+        <?php if ($result && $result->num_rows > 0): ?>
+            <!-- Barınak Kartları -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <?php while ($barinak = $result->fetch_assoc()): ?>
+                    <div class="shelter-card bg-white rounded-2xl shadow-lg overflow-hidden">
+                        <!-- Barınak Resmi -->
+                        <div class="relative h-48 bg-gradient-to-br from-purple-400 to-pink-400">
+                            <?php if (!empty($barinak['resim'])): ?>
+                                <img src="uploads/barinaklar/<?= htmlspecialchars($barinak['resim']) ?>" 
+                                     alt="<?= htmlspecialchars($barinak['ad']) ?>" 
+                                     class="w-full h-full object-cover">
+                            <?php endif; ?>
+                            
+                            <!-- Overlay -->
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                            
+                            <!-- Aktif Badge -->
+                            <div class="absolute top-4 right-4">
+                                <span class="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                                    <i class="fas fa-check-circle mr-1"></i>Aktif
+                                </span>
+                            </div>
+                            
+                            <!-- Şehir Badge -->
+                            <div class="absolute bottom-4 left-4">
+                                <span class="bg-white/90 text-gray-800 px-3 py-1 rounded-full text-sm font-semibold">
+                                    <i class="fas fa-map-marker-alt mr-1"></i>
+                                    <?= htmlspecialchars($barinak['il_adi']) ?>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Barınak Bilgileri -->
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-3">
+                                <?= htmlspecialchars($barinak['ad']) ?>
+                            </h3>
+
+                            <!-- Bilgi Kartları -->
+                            <div class="space-y-3 mb-6">
+                                <?php if ($barinak['il_adi'] || $barinak['ilce_adi']): ?>
+                                    <div class="flex items-center text-gray-600">
+                                        <i class="fas fa-map-marker-alt w-5 text-primary"></i>
+                                        <span class="ml-2">
+                                            <?= htmlspecialchars($barinak['il_adi']) ?>
+                                            <?php if ($barinak['ilce_adi']): ?>
+                                                / <?= htmlspecialchars($barinak['ilce_adi']) ?>
+                                            <?php endif; ?>
+                                        </span>
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php if (isset($barinak['telefon']) && $barinak['telefon']): ?>
+                                    <div class="flex items-center text-gray-600">
+                                        <i class="fas fa-phone w-5 text-green-500"></i>
+                                        <a href="tel:<?= htmlspecialchars($barinak['telefon']) ?>" 
+                                           class="ml-2 hover:text-primary transition-colors">
+                                            <?= htmlspecialchars($barinak['telefon']) ?>
+                                        </a>
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php if (isset($barinak['email']) && $barinak['email']): ?>
+                                    <div class="flex items-center text-gray-600">
+                                        <i class="fas fa-envelope w-5 text-blue-500"></i>
+                                        <a href="mailto:<?= htmlspecialchars($barinak['email']) ?>" 
+                                           class="ml-2 hover:text-primary transition-colors text-sm">
+                                            <?= htmlspecialchars($barinak['email']) ?>
+                                        </a>
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php 
+                                // Check if kapasite column exists before displaying it
+                                $capacity_check = $conn->query("SHOW COLUMNS FROM hayvan_barinaklari LIKE 'kapasite'");
+                                if ($capacity_check && $capacity_check->num_rows > 0 && $barinak['kapasite']): 
+                                ?>
+                                    <div class="flex items-center text-gray-600">
+                                        <i class="fas fa-home w-5 text-purple-500"></i>
+                                        <span class="ml-2">Kapasite: <?= htmlspecialchars($barinak['kapasite']) ?></span>
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php 
+                                // Check if kurulus_tarihi column exists before displaying it
+                                $date_check = $conn->query("SHOW COLUMNS FROM hayvan_barinaklari LIKE 'kurulus_tarihi'");
+                                if ($date_check && $date_check->num_rows > 0 && $barinak['kurulus_tarihi']): 
+                                ?>
+                                    <div class="flex items-center text-gray-600">
+                                        <i class="fas fa-calendar w-5 text-orange-500"></i>
+                                        <span class="ml-2">
+                                            Kuruluş: <?= date('Y', strtotime($barinak['kurulus_tarihi'])) ?>
+                                        </span>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+
+                            <!-- Açıklama - only show if column exists and has value -->
+                            <?php if (isset($barinak['aciklama']) && !empty($barinak['aciklama'])): ?>
+                                <p class="text-gray-600 text-sm mb-6 line-clamp-3">
+                                    <?= htmlspecialchars($barinak['aciklama']) ?>
+                                </p>
+                            <?php endif; ?>
+
+                            <!-- Adres -->
+                            <?php if (isset($barinak['adres']) && $barinak['adres']): ?>
+                                <div class="bg-gray-50 rounded-lg p-3 mb-6">
+                                    <div class="flex items-start">
+                                        <i class="fas fa-map-pin text-primary mt-1 mr-2"></i>
+                                        <div>
+                                            <div class="font-medium text-gray-800 text-sm">Adres:</div>
+                                            <div class="text-gray-600 text-sm">
+                                                <?= htmlspecialchars($barinak['adres']) ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+
+                            <!-- İletişim Butonları -->
+                            <div class="grid grid-cols-2 gap-3">
+                                <?php if (isset($barinak['telefon']) && $barinak['telefon']): ?>
+                                    <a href="tel:<?= htmlspecialchars($barinak['telefon']) ?>" 
+                                       class="contact-btn text-white px-4 py-3 rounded-lg text-center font-semibold text-sm">
+                                        <i class="fas fa-phone mr-2"></i>Ara
+                                    </a>
+                                <?php endif; ?>
+                                
+                                <?php if (isset($barinak['adres']) && $barinak['adres']): ?>
+                                    <a href="https://maps.google.com/?q=<?= urlencode($barinak['adres']) ?>" 
+                                       target="_blank"
+                                       class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-lg text-center font-semibold text-sm transition-colors">
+                                        <i class="fas fa-map-marked-alt mr-2"></i>Harita
+                                    </a>
+                                <?php endif; ?>
+                            </div>
+
+                            <!-- Web Sitesi - only show if column exists and has value -->
+                            <?php if (isset($barinak['website']) && !empty($barinak['website'])): ?>
+                                <div class="mt-3">
+                                    <a href="<?= htmlspecialchars($barinak['website']) ?>" 
+                                       target="_blank"
+                                       class="btn-gradient text-white px-4 py-2 rounded-lg text-center font-semibold text-sm w-full block">
+                                        <i class="fas fa-globe mr-2"></i>Web Sitesi
+                                    </a>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php endwhile; ?>
+            </div>
+
+            <!-- Sayfalama -->
+            <?php if ($total_pages > 1): ?>
+                <div class="pagination">
+                    <?php if ($page > 1): ?>
+                        <a href="?<?= http_build_query(array_merge($_GET, ['page' => $page - 1])) ?>" 
+                           class="text-gray-600 hover:text-primary">
+                            <i class="fas fa-chevron-left mr-1"></i>Önceki
                         </a>
-                        <a href="ilanlarim.php" class="text-stone-600 hover:text-primary font-semibold transition duration-300">İlanlarım</a>
-                        <a href="favorilerim.php" class="text-stone-600 hover:text-primary font-semibold transition duration-300">Favorilerim</a>
-                        <span class="text-stone-600">Hoş geldin, <?= htmlspecialchars($_SESSION['kullanici_adi']) ?>!</span>
-                        <a href="cikis.php" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-md font-semibold transition duration-300">
-                            <i class="fas fa-sign-out-alt mr-2"></i>Çıkış
-                        </a>
-                    <?php else: ?>
-                        <a href="giris.php" class="btn-gradient text-white px-4 py-2 rounded-md transition duration-300">
-                            <i class="fas fa-sign-in-alt mr-2"></i>Giriş Yap
+                    <?php endif; ?>
+
+                    <?php for ($i = max(1, $page - 2); $i <= min($total_pages, $page + 2); $i++): ?>
+                        <?php if ($i == $page): ?>
+                            <span class="current"><?= $i ?></span>
+                        <?php else: ?>
+                            <a href="?<?= http_build_query(array_merge($_GET, ['page' => $i])) ?>" 
+                               class="text-gray-600 hover:text-primary"><?= $i ?></a>
+                        <?php endif; ?>
+                    <?php endfor; ?>
+
+                    <?php if ($page < $total_pages): ?>
+                        <a href="?<?= http_build_query(array_merge($_GET, ['page' => $page + 1])) ?>" 
+                           class="text-gray-600 hover:text-primary">
+                            Sonraki<i class="fas fa-chevron-right ml-1"></i>
                         </a>
                     <?php endif; ?>
                 </div>
-            </div>
-        </nav>
-    </header>
+            <?php endif; ?>
 
-    <!-- Ana İçerik -->
-    <main class="max-w-7xl mx-auto px-6 py-8">
-        <!-- Sayfa Başlığı -->
-        <div class="text-center mb-12">
-            <h1 class="text-4xl font-bold text-gray-800 mb-4">
-                <i class="fas fa-home mr-3 text-primary"></i>
-                Hayvan Barınakları
-            </h1>
-            <p class="text-xl text-gray-600">Canlarımıza ev sahipliği yapan barınaklar</p>
-        </div>
-
-        <!-- Filtreler -->
-        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 card-hover">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">
-                <i class="fas fa-filter mr-3 text-primary"></i>
-                Barınakları Filtrele
-            </h2>
-            <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        <i class="fas fa-map-marker-alt mr-1 text-primary"></i>İl
-                    </label>
-                    <select name="il_id" id="il" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary">
-                        <option value="">Tüm İller</option>
-                        <?php 
-                        if ($iller) {
-                            $iller->data_seek(0); // Reset pointer
-                            while($il = $iller->fetch_assoc()): 
-                        ?>
-                            <option value="<?= $il['id'] ?>" <?= ($il_id == $il['id']) ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($il['ad']) ?>
-                            </option>
-                        <?php endwhile; } ?>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        <i class="fas fa-location-arrow mr-1 text-primary"></i>İlçe
-                    </label>
-                    <select name="ilce_id" id="ilce" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary">
-                        <option value="">Tüm İlçeler</option>
-                    </select>
-                </div>
-
-                <div class="flex items-end">
-                    <button type="submit" class="w-full btn-gradient text-white px-6 py-2 rounded-md font-semibold transition duration-300">
-                        <i class="fas fa-search mr-2"></i>Filtrele
-                    </button>
-                </div>
-
-                <div class="flex items-end">
-                    <a href="barinaklar.php" class="w-full bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-md font-semibold text-center transition duration-300">
-                        <i class="fas fa-times mr-2"></i>Temizle
+        <?php else: ?>
+            <!-- Sonuç Bulunamadı -->
+            <div class="text-center py-16">
+                <div class="text-8xl mb-8">🏢</div>
+                <h3 class="text-3xl font-bold text-gray-600 mb-4">Barınak Bulunamadı</h3>
+                <p class="text-xl text-gray-500 mb-8 max-w-md mx-auto">
+                    Aradığınız kriterlere uygun barınak bulunamadı. Farklı filtreler deneyebilirsiniz.
+                </p>
+                <div class="space-y-4">
+                    <a href="barinaklar.php" 
+                       class="btn-gradient text-white px-8 py-3 rounded-lg font-semibold inline-block">
+                        <i class="fas fa-list mr-2"></i>Tüm Barınakları Göster
                     </a>
-                </div>
-            </form>
-        </div>
-
-        <!-- İstatistikler -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-            <div class="bg-white rounded-xl shadow-lg p-6 text-center card-hover">
-                <div class="text-3xl font-bold text-primary mb-2"><?= $toplam_barinak ?></div>
-                <div class="text-gray-600">Toplam Barınak</div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-lg p-6 text-center card-hover">
-                <div class="text-3xl font-bold text-orange-600 mb-2"><?= $filtrelenen_barinak ?></div>
-                <div class="text-gray-600">Filtrelenen Barınak</div>
-            </div>
-            
-            <div class="bg-white rounded-xl shadow-lg p-6 text-center card-hover">
-                <div class="text-3xl font-bold text-green-600 mb-2"><?= $toplam_hayvan ?></div>
-                <div class="text-gray-600">Sahiplenmeyi Bekleyen</div>
-            </div>
-            
-            <div class="bg-white rounded-xl shadow-lg p-6 text-center card-hover">
-                <div class="text-3xl font-bold text-blue-600 mb-2"><?= $sahiplenen_sayisi ?></div>
-                <div class="text-gray-600">Mutlu Son Bulan</div>
-            </div>
-        </div>
-
-        <!-- Sonuç Başlığı -->
-        <?php if ($il_id > 0 || $ilce_id > 0): ?>
-            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-8">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <i class="fas fa-info-circle text-blue-600"></i>
-                        <span class="text-blue-800 font-semibold">
-                            <?php
-                            $filter_text = [];
-                            if ($il_id > 0) {
-                                $il_result = $conn->query("SELECT ad FROM il WHERE id = $il_id");
-                                if ($il_result && $il_row = $il_result->fetch_assoc()) {
-                                    $filter_text[] = $il_row['ad'];
-                                }
-                            }
-                            if ($ilce_id > 0) {
-                                $ilce_result = $conn->query("SELECT ad FROM ilce WHERE id = $ilce_id");
-                                if ($ilce_result && $ilce_row = $ilce_result->fetch_assoc()) {
-                                    $filter_text[] = $ilce_row['ad'];
-                                }
-                            }
-                            echo implode(' / ', $filter_text) . ' bölgesinde ' . $filtrelenen_barinak . ' barınak bulundu';
-                            ?>
-                        </span>
-                    </div>
-                    <a href="barinaklar.php" class="text-blue-600 hover:text-blue-800 font-semibold text-sm">
-                        <i class="fas fa-times mr-1"></i>Filtreyi Kaldır
-                    </a>
+                    <?php if ($user_id): ?>
+                        <br>
+                        <a href="barinak_ekle.php" 
+                           class="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-lg font-semibold inline-block transition-colors">
+                            <i class="fas fa-plus mr-2"></i>Barınak Ekle
+                        </a>
+                    <?php endif; ?>
                 </div>
             </div>
         <?php endif; ?>
+    </div>
 
-        <!-- Barınaklar Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <?php 
-            if ($barinaklar_result && $barinaklar_result->num_rows > 0): 
-                // Unique ID'leri kontrol etmek için array
-                $seen_ids = array();
-                
-                while ($barinak = $barinaklar_result->fetch_assoc()): 
-                    // Eğer bu ID daha önce görüldüyse, atla
-                    if (in_array($barinak['id'], $seen_ids)) {
-                        continue;
-                    }
-                    // ID'yi görüldü olarak işaretle
-                    $seen_ids[] = $barinak['id'];
-            ?>
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover">
-                    <div class="p-6">
-                        <div class="flex items-start justify-between mb-4">
-                            <h3 class="text-xl font-bold text-gray-800"><?= htmlspecialchars($barinak['ad']) ?></h3>
-                            <div class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm font-semibold">
-                                <i class="fas fa-check-circle mr-1"></i>Aktif
-                            </div>
-                        </div>
-                        
-                        <!-- Barınak Bilgileri -->
-                        <div class="space-y-3 mb-4">
-                            <?php if ($barinak['il_adi']): ?>
-                                <div class="flex items-center text-gray-600">
-                                    <i class="fas fa-map-marker-alt mr-2 text-primary"></i>
-                                    <span><?= htmlspecialchars($barinak['il_adi']) ?><?= $barinak['ilce_adi'] ? ' / ' . htmlspecialchars($barinak['ilce_adi']) : '' ?></span>
-                                </div>
-                            <?php endif; ?>
-                            
-                            <?php if ($barinak['telefon']): ?>
-                                <div class="flex items-center text-gray-600">
-                                    <i class="fas fa-phone mr-2 text-primary"></i>
-                                    <a href="tel:<?= htmlspecialchars($barinak['telefon']) ?>" class="hover:text-primary transition-colors">
-                                        <?= htmlspecialchars($barinak['telefon']) ?>
-                                    </a>
-                                </div>
-                            <?php endif; ?>
-                            
-                            <?php if ($barinak['email']): ?>
-                                <div class="flex items-center text-gray-600">
-                                    <i class="fas fa-envelope mr-2 text-primary"></i>
-                                    <a href="mailto:<?= htmlspecialchars($barinak['email']) ?>" class="hover:text-primary transition-colors">
-                                        <?= htmlspecialchars($barinak['email']) ?>
-                                    </a>
-                                </div>
-                            <?php endif; ?>
-                            
-                            <?php if ($barinak['website']): ?>
-                                <div class="flex items-center text-gray-600">
-                                    <i class="fas fa-globe mr-2 text-primary"></i>
-                                    <a href="<?= htmlspecialchars($barinak['website']) ?>" target="_blank" class="hover:text-primary transition-colors">
-                                        Web Sitesi
-                                    </a>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-
-                        <!-- Konum Bilgisi (Latitude/Longitude varsa) -->
-                        <?php if ($barinak['latitude'] && $barinak['longitude']): ?>
-                            <div class="bg-blue-50 rounded-lg p-3 mb-4">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-sm font-semibold text-blue-700">
-                                        <i class="fas fa-map-pin mr-1"></i>Konum Mevcut
-                                    </span>
-                                    <a href="https://www.google.com/maps?q=<?= $barinak['latitude'] ?>,<?= $barinak['longitude'] ?>" 
-                                       target="_blank" 
-                                       class="text-blue-600 hover:text-blue-800 text-sm font-semibold">
-                                        <i class="fas fa-external-link-alt mr-1"></i>Haritada Gör
-                                    </a>
-                                </div>
-                            </div>
-                        <?php endif; ?>
-                        
-                        <!-- Açıklama -->
-                        <?php if ($barinak['aciklama']): ?>
-                            <p class="text-gray-600 text-sm mb-4 line-clamp-3"><?= htmlspecialchars($barinak['aciklama']) ?></p>
-                        <?php endif; ?>
-                        
-                        <!-- Adres -->
-                        <?php if ($barinak['adres']): ?>
-                            <div class="border-t pt-4 mb-4">
-                                <div class="flex items-start text-gray-600">
-                                    <i class="fas fa-map mr-2 text-primary mt-1"></i>
-                                    <p class="text-sm"><?= htmlspecialchars($barinak['adres']) ?></p>
-                                </div>
-                            </div>
-                        <?php endif; ?>
-
-                        <!-- Kayıt Tarihi -->
-                        <div class="text-xs text-gray-500 mb-4">
-                            <i class="fas fa-calendar mr-1"></i>
-                            Kayıt: <?= date('d.m.Y', strtotime($barinak['created_at'])) ?>
-                        </div>
-                        
-                        <!-- İletişim Butonları -->
-                        <div class="grid grid-cols-1 gap-2">
-                            <?php if ($barinak['telefon']): ?>
-                                <a href="tel:<?= htmlspecialchars($barinak['telefon']) ?>" 
-                                   class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-md text-sm font-semibold text-center transition duration-300">
-                                    <i class="fas fa-phone mr-1"></i>Telefon: <?= htmlspecialchars($barinak['telefon']) ?>
-                                </a>
-                            <?php endif; ?>
-                            
-                            <?php if ($barinak['email']): ?>
-                                <a href="mailto:<?= htmlspecialchars($barinak['email']) ?>" 
-                                   class="btn-gradient text-white px-3 py-2 rounded-md text-sm font-semibold text-center">
-                                    <i class="fas fa-envelope mr-1"></i>E-posta Gönder
-                                </a>
-                            <?php endif; ?>
-
-                            <?php if ($barinak['website']): ?>
-                                <a href="<?= htmlspecialchars($barinak['website']) ?>" 
-                                   target="_blank"
-                                   class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-md text-sm font-semibold text-center transition duration-300">
-                                    <i class="fas fa-globe mr-1"></i>Web Sitesi
-                                </a>
-                            <?php endif; ?>
-
-                            <?php if ($barinak['latitude'] && $barinak['longitude']): ?>
-                                <a href="https://www.google.com/maps?q=<?= $barinak['latitude'] ?>,<?= $barinak['longitude'] ?>" 
-                                   target="_blank"
-                                   class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-md text-sm font-semibold text-center transition duration-300">
-                                    <i class="fas fa-map-marked-alt mr-1"></i>Haritada Görüntüle
-                                </a>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </div>
-            <?php 
-                endwhile; 
-            else: 
-            ?>
-                <div class="col-span-full text-center py-16">
-                    <div class="text-6xl mb-6">🏠</div>
-                    <h3 class="text-2xl font-semibold text-gray-600 mb-4">
-                        <?= ($il_id > 0 || $ilce_id > 0) ? 'Bu Bölgede Barınak Bulunamadı' : 'Barınak Bulunamadı' ?>
-                    </h3>
-                    <p class="text-gray-500 mb-6">
-                        <?= ($il_id > 0 || $ilce_id > 0) ? 'Seçilen kriterlere uygun barınak bulunmuyor. Farklı bir bölge deneyin.' : 'Henüz kayıtlı barınak bulunmuyor.' ?>
-                    </p>
-                    
-                    <?php if ($il_id > 0 || $ilce_id > 0): ?>
-                        <a href="barinaklar.php" class="btn-gradient text-white px-6 py-3 rounded-md font-semibold">
-                            <i class="fas fa-list mr-2"></i>Tüm Barınakları Görüntüle
-                        </a>
-                    <?php endif; ?>
-                </div>
-            <?php endif; ?>
-        </div>
-
-        <!-- Barınak Bilgilendirme -->
-        <div class="mt-16 bg-white rounded-xl shadow-lg p-8">
-            <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold text-gray-800 mb-4">
-                    <i class="fas fa-info-circle mr-3 text-primary"></i>
-                    Barınaklar Hakkında
-                </h2>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                    <h3 class="text-xl font-semibold text-gray-800 mb-4">
-                        <i class="fas fa-heart mr-2 text-red-500"></i>
-                        Barınaklara Nasıl Yardım Edebilirim?
-                    </h3>
-                    <ul class="space-y-2 text-gray-600">
-                        <li class="flex items-start space-x-2">
-                            <i class="fas fa-check text-green-500 mt-1"></i>
-                            <span>Mama, su kabı ve oyuncak bağışı yapabilirsiniz</span>
-                        </li>
-                        <li class="flex items-start space-x-2">
-                            <i class="fas fa-check text-green-500 mt-1"></i>
-                            <span>Gönüllü olarak barınakta yardım edebilirsiniz</span>
-                        </li>
-                        <li class="flex items-start space-x-2">
-                            <i class="fas fa-check text-green-500 mt-1"></i>
-                            <span>Finansal bağış yapabilirsiniz</span>
-                        </li>
-                        <li class="flex items-start space-x-2">
-                            <i class="fas fa-check text-green-500 mt-1"></i>
-                            <span>Sosyal medyada paylaşarak farkındalık yaratabilirsiniz</span>
-                        </li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h3 class="text-xl font-semibold text-gray-800 mb-4">
-                        <i class="fas fa-phone-alt mr-2 text-blue-500"></i>
-                        İletişime Geçmeden Önce
-                    </h3>
-                    <ul class="space-y-2 text-gray-600">
-                        <li class="flex items-start space-x-2">
-                            <i class="fas fa-check text-green-500 mt-1"></i>
-                            <span>Ziyaret saatlerini öğrenin</span>
-                        </li>
-                        <li class="flex items-start space-x-2">
-                            <i class="fas fa-check text-green-500 mt-1"></i>
-                            <span>Önceden randevu alın</span>
-                        </li>
-                        <li class="flex items-start space-x-2">
-                            <i class="fas fa-check text-green-500 mt-1"></i>
-                            <span>Sahiplendirme şartlarını öğrenin</span>
-                        </li>
-                        <li class="flex items-start space-x-2">
-                            <i class="fas fa-check text-green-500 mt-1"></i>
-                            <span>Gerekli belgeleri hazırlayın</span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-12 mt-16">
+    <!-- Bilgilendirme Bölümü -->
+    <div class="bg-white py-16">
         <div class="max-w-7xl mx-auto px-6">
-            <div class="text-center">
-                <div class="text-3xl mb-4">🐾</div>
-                <h3 class="text-2xl font-bold mb-4 text-primary-lighter">Hayvan Dostları</h3>
-                <p class="text-gray-400">Sevgi dolu dostlarımıza yuva bulma platformu</p>
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-heart mr-3 text-primary"></i>
+                    Barınaklara <span class="text-primary">Nasıl Yardım</span> Edebilirsiniz?
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Hayvan barınaklarına destek olmanın birçok yolu var. İşte onlara yardım etmenin bazı yolları:
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="text-center p-6 bg-purple-50 rounded-xl">
+                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-hand-holding-heart text-3xl text-purple-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Bağış Yapın</h3>
+                    <p class="text-gray-600">
+                        Barınakların mama, veteriner ve bakım masrafları için maddi destek sağlayın.
+                    </p>
+                </div>
+
+                <div class="text-center p-6 bg-green-50 rounded-xl">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-users text-3xl text-green-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Gönüllü Olun</h3>
+                    <p class="text-gray-600">
+                        Hayvanların bakımında, temizliğinde ve sosyalleşmesinde yardımcı olun.
+                    </p>
+                </div>
+
+                <div class="text-center p-6 bg-blue-50 rounded-xl">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-home text-3xl text-blue-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Sahiplenin</h3>
+                    <p class="text-gray-600">
+                        Bir hayvanı sahiplenerek hem ona yuva verin hem de barınağa yer açın.
+                    </p>
+                </div>
+
+                <div class="text-center p-6 bg-pink-50 rounded-xl">
+                    <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-share-alt text-3xl text-pink-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Paylaşın</h3>
+                    <p class="text-gray-600">
+                        Barınakların ve hayvanların hikayelerini sosyal medyada paylaşın.
+                    </p>
+                </div>
             </div>
         </div>
-    </footer>
+    </div>
+</main>
 
-    <!-- JavaScript -->
-    <script>
-        const ilceler = <?= json_encode($ilceler_array) ?>;
-
-        document.addEventListener("DOMContentLoaded", function() {
-            const ilSelect = document.getElementById('il');
-            const ilceSelect = document.getElementById('ilce');
-            
-            // İl değiştiğinde ilçeleri güncelle
-            ilSelect.addEventListener('change', function() {
-                const ilId = this.value;
-                ilceSelect.innerHTML = '<option value="">Tüm İlçeler</option>';
-                
-                if (ilId && ilceler[ilId]) {
-                    ilceler[ilId].forEach(function(ilce) {
-                        const option = document.createElement('option');
-                        option.value = ilce.id;
-                        option.textContent = ilce.ad;
-                        <?php if ($ilce_id > 0): ?>
-                            if (ilce.id == <?= $ilce_id ?>) {
-                                option.selected = true;
-                            }
-                        <?php endif; ?>
-                        ilceSelect.appendChild(option);
+<!-- JavaScript -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
                     });
                 }
             });
-
-            // Sayfa yüklendiğinde mevcut filtrelere göre ilçe doldur
-            <?php if ($il_id > 0): ?>
-                ilSelect.dispatchEvent(new Event('change'));
-            <?php endif; ?>
         });
-    </script>
-</body>
-</html>
 
-<?php
-$conn->close();
-?>
+        // Shelter card hover effects
+        document.querySelectorAll('.shelter-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-8px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Stats counter animation
+        const observerOptions = {
+            threshold: 0.5,
+            triggerOnce: true
+        };
+
+        const statsObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const counter = entry.target;
+                    const target = parseInt(counter.textContent);
+                    const duration = 2000;
+                    const step = target / (duration / 16);
+                    let current = 0;
+
+                    const timer = setInterval(() => {
+                        current += step;
+                        if (current >= target) {
+                            counter.textContent = target.toLocaleString();
+                            clearInterval(timer);
+                        } else {
+                            counter.textContent = Math.floor(current).toLocaleString();
+                        }
+                    }, 16);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.stats-card .text-3xl').forEach(counter => {
+            statsObserver.observe(counter);
+        });
+
+        // Loading animation for search form
+        document.querySelector('form').addEventListener('submit', function() {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Aranıyor...';
+            submitBtn.disabled = true;
+        });
+
+        // Phone number formatting
+        document.querySelectorAll('a[href^="tel:"]').forEach(link => {
+            const phone = link.textContent.trim();
+            if (phone.length === 11 && phone.startsWith('0')) {
+                // Format Turkish phone number: 0XXX XXX XX XX
+                const formatted = phone.replace(/(\d{4})(\d{3})(\d{2})(\d{2})/, '$1 $2 $3 $4');
+                link.textContent = formatted;
+            }
+        });
+
+        // Initialize tooltips
+        document.querySelectorAll('[title]').forEach(element => {
+            element.addEventListener('mouseenter', function() {
+                const tooltip = document.createElement('div');
+                tooltip.className = 'fixed bg-gray-800 text-white px-2 py-1 rounded text-sm z-50 pointer-events-none';
+                tooltip.textContent = this.title;
+                document.body.appendChild(tooltip);
+                
+                const rect = this.getBoundingClientRect();
+                tooltip.style.left = rect.left + 'px';
+                tooltip.style.top = (rect.top - 30) + 'px';
+                
+                this.addEventListener('mouseleave', function() {
+                    if (tooltip.parentNode) {
+                        tooltip.parentNode.removeChild(tooltip);
+                    }
+                }, { once: true });
+            });
+        });
+
+        console.log('🏢 Barınaklar sayfası yüklendi');
+    });
+
+    // Back to top functionality
+    window.addEventListener('scroll', function() {
+        const backToTop = document.getElementById('backToTop');
+        if (window.scrollY > 300) {
+            if (!backToTop) {
+                const button = document.createElement('button');
+                button.id = 'backToTop';
+                button.innerHTML = '<i class="fas fa-arrow-up"></i>';
+                button.className = 'fixed bottom-6 right-6 bg-primary text-white p-3 rounded-full shadow-lg hover:bg-primary-dark transition-all duration-300 z-50';
+                button.addEventListener('click', () => {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+                document.body.appendChild(button);
+            }
+        } else {
+            if (backToTop) {
+                backToTop.remove();
+            }
+        }
+    });
+</script>
+
+<?php include("includes/footer.php"); ?>
