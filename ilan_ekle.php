@@ -173,13 +173,89 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ekle'])) {
     <link href="./dist/output.css" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            --bg-light: #F8F9FA;
+            --primary-pink: #FFB3C6;
+            --action-mint: #A8DADC;
+            --text-dark: #2B2D42;
+        }
+
+        .form-page-wrap {
+            background:
+                radial-gradient(circle at 12% 16%, rgba(255, 179, 198, 0.25), transparent 42%),
+                radial-gradient(circle at 88% 12%, rgba(168, 218, 220, 0.25), transparent 38%),
+                var(--bg-light);
+        }
+
+        .pet-form-card {
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid var(--primary-pink);
+            border-radius: 16px;
+            box-shadow: 0 16px 36px rgba(43, 45, 66, 0.12);
+            backdrop-filter: blur(2px);
+        }
+
+        .pet-form-card h1,
+        .pet-form-card label,
+        .pet-form-card p,
+        .pet-form-card span {
+            color: var(--text-dark);
+        }
+
+        .pet-form-card input[type="text"],
+        .pet-form-card input[type="number"],
+        .pet-form-card input[type="file"],
+        .pet-form-card textarea,
+        .pet-form-card select {
+            border: 1px solid var(--primary-pink) !important;
+            border-radius: 12px !important;
+            background-color: #ffffff !important;
+            color: var(--text-dark) !important;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .pet-form-card input::placeholder,
+        .pet-form-card textarea::placeholder {
+            color: rgba(43, 45, 66, 0.65);
+        }
+
+        .pet-form-card input:focus,
+        .pet-form-card textarea:focus,
+        .pet-form-card select:focus {
+            border-color: var(--action-mint) !important;
+            box-shadow: 0 0 0 4px rgba(168, 218, 220, 0.34) !important;
+            outline: none;
+        }
+
+        .pet-form-card .submit-btn {
+            background: var(--action-mint) !important;
+            color: #ffffff !important;
+            border: none !important;
+            border-radius: 14px !important;
+            box-shadow: 0 12px 26px rgba(43, 45, 66, 0.16);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .pet-form-card .submit-btn:hover {
+            background: #8fcfd1 !important;
+            color: #ffffff !important;
+            transform: translateY(-1px);
+            box-shadow: 0 16px 30px rgba(43, 45, 66, 0.18);
+        }
+
+        .pet-form-card .submit-btn i {
+            color: #ffffff !important;
+        }
+    </style>
 </head>
-<body class="bg-gray-50 font-sans min-h-screen flex flex-col">
+<body class="bg-gray-50 font-sans min-h-screen flex flex-col form-page-wrap">
 
 <?php include("includes/header.php"); ?>
 
 <div class="container mx-auto p-4 flex-grow pt-20">
-    <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-xl mt-8">
+    <div class="max-w-4xl mx-auto p-8 mt-8 pet-form-card">
     <h1 class="text-3xl font-bold text-center mb-8">Yeni İlan Oluştur</h1>
 
     <?php if (!empty($mesaj)): ?>
@@ -287,7 +363,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ekle'])) {
             <input type="hidden" name="camera_image_data" id="cameraImageData">
         </div>
 
-        <button type="submit" name="ekle" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-md transition duration-300 w-full">
+        <button type="submit" name="ekle" class="font-bold py-2 px-6 transition duration-300 w-full submit-btn">
             <i class="fas fa-plus-circle mr-2"></i> İlanı Oluştur
         </button>
     </form>
