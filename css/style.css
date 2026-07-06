@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
 :root {
   --bg-light: #F8F9FA;
   --primary-pink: #FFB3C6;
@@ -10,7 +12,7 @@
 }
 
 body {
-  font-family: 'Segoe UI', sans-serif;
+  font-family: 'Poppins', sans-serif;
   background:
     radial-gradient(circle at 15% 20%, rgba(255, 179, 198, 0.28), transparent 48%),
     radial-gradient(circle at 85% 10%, rgba(168, 218, 220, 0.3), transparent 42%),
@@ -105,20 +107,34 @@ h2 {
 
 button,
 .btn,
+.btn-secondary,
+.btn-danger,
+.btn-warning {
+  background: var(--primary-pink) !important;
+  color: var(--text-dark) !important;
+  border: 1px solid rgba(43, 45, 66, 0.08) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 8px 20px rgba(43, 45, 66, 0.1) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+button[type="submit"],
 .btn-success,
+.btn-primary,
 .swal2-confirm,
-button[type="submit"] {
+.cta-primary {
   background: var(--action-mint) !important;
   color: var(--text-dark) !important;
   border: none !important;
   border-radius: 14px !important;
   box-shadow: 0 10px 24px rgba(43, 45, 66, 0.12) !important;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 button:hover,
 .btn:hover,
 .btn-success:hover,
+.btn-primary:hover,
+.btn-secondary:hover,
 .swal2-confirm:hover,
 button[type="submit"]:hover {
   transform: translateY(-1px);

@@ -30,7 +30,10 @@ if ($is_logged_in && $user_id) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $page_title ?? 'Hayvan Dostları' ?></title>
+    <title><?= $page_title ?? 'Satın Alma Yuva Ol' ?></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -51,6 +54,7 @@ if ($is_logged_in && $user_id) {
         }
 
         body {
+            font-family: 'Poppins', sans-serif;
             background:
                 radial-gradient(circle at 12% 15%, rgba(255, 179, 198, 0.28), transparent 46%),
                 radial-gradient(circle at 88% 8%, rgba(168, 218, 220, 0.28), transparent 42%),
@@ -242,6 +246,23 @@ if ($is_logged_in && $user_id) {
             color: var(--text-dark) !important;
         }
 
+        .cta-primary,
+        .swal2-confirm,
+        button[type="submit"] {
+            background: var(--action-mint) !important;
+            color: var(--text-dark) !important;
+            border: none !important;
+            border-radius: 14px !important;
+            box-shadow: 0 10px 24px rgba(43, 45, 66, 0.12) !important;
+        }
+
+        .cta-secondary {
+            background: var(--primary-pink) !important;
+            color: var(--text-dark) !important;
+            border: 1px solid rgba(43, 45, 66, 0.08) !important;
+            border-radius: 14px !important;
+        }
+
         .rounded-md,
         .rounded-full,
         .dropdown-menu,
@@ -281,10 +302,13 @@ if ($is_logged_in && $user_id) {
                 <!-- Logo -->
                 <div class="flex items-center">
                     <a href="index.php" class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
+                        <div class="w-10 h-10 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center cta-secondary">
                             <i class="fas fa-paw text-white text-lg"></i>
                         </div>
-                        <span class="text-xl font-bold text-gray-800">Hayvan Dostları</span>
+                        <span class="text-xl font-bold text-gray-800">
+                            <span>Satın Alma</span>
+                            <span class="ml-1" style="color: var(--action-mint);">Yuva Ol</span>
+                        </span>
                     </a>
                 </div>
 
@@ -372,7 +396,7 @@ if ($is_logged_in && $user_id) {
                             <a href="giris.php" class="text-purple-600 hover:text-purple-700 font-medium px-3 py-2 rounded-md transition-colors">
                                 <i class="fas fa-sign-in-alt mr-1"></i>Giriş
                             </a>
-                            <a href="kayit.php" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-md font-medium hover:from-purple-700 hover:to-pink-700 transition-all duration-200">
+                            <a href="kayit.php" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-md font-medium hover:from-purple-700 hover:to-pink-700 transition-all duration-200 cta-primary">
                                 <i class="fas fa-user-plus mr-1"></i>Kayıt Ol
                             </a>
                         </div>
@@ -412,7 +436,7 @@ if ($is_logged_in && $user_id) {
                             <a href="giris.php" class="block text-purple-600 hover:text-purple-700 font-medium py-2">
                                 <i class="fas fa-sign-in-alt mr-2"></i>Giriş Yap
                             </a>
-                            <a href="kayit.php" class="block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-md font-medium text-center">
+                            <a href="kayit.php" class="block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-md font-medium text-center cta-primary">
                                 <i class="fas fa-user-plus mr-2"></i>Kayıt Ol
                             </a>
                         </div>

@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     }
 }
 
-$page_title = "Gelen Talepler - Hayvan Dostları";
+$page_title = "Gelen Talepler - Satın Alma Yuva Ol";
 include("includes/header.php");
 // Get incoming adoption requests for user's ads
 $requests_sql = "SELECT si.*, i.baslik as ilan_baslik, i.foto as ilan_foto, i.id as ilan_id,

@@ -124,7 +124,7 @@ class MailSender {
                 </div>
                 <div class='content'>
                     <h2>Merhaba $username!</h2>
-                    <p>Hayvan Dostları platformuna hoş geldiniz! Hesabınızı aktifleştirmek için aşağıdaki butona tıklayın:</p>
+                    <p>Satın Alma Yuva Ol platformuna hoş geldiniz! Hesabınızı aktifleştirmek için aşağıdaki butona tıklayın:</p>
                     
                     <div style='text-align: center;'>
                         <a href='$verification_link' class='btn'>📧 Email Adresimi Doğrula</a>

@@ -66,12 +66,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giriş Yap - Hayvan Dostları</title>
+    <title>Giriş Yap - Satın Alma Yuva Ol</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        :root {
+            --bg-light: #F8F9FA;
+            --primary-pink: #FFB3C6;
+            --action-mint: #A8DADC;
+            --text-dark: #2B2D42;
+        }
+        .gradient-bg {
+            font-family: 'Poppins', sans-serif;
+            background:
+                radial-gradient(circle at 14% 16%, rgba(255, 179, 198, 0.28), transparent 46%),
+                radial-gradient(circle at 86% 10%, rgba(168, 218, 220, 0.28), transparent 42%),
+                var(--bg-light);
+        }
         .form-input:focus { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
     </style>
 </head>
@@ -82,7 +97,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full mb-4">
                 <i class="fas fa-paw text-2xl text-purple-600"></i>
             </div>
-            <h1 class="text-3xl font-bold text-white mb-2">Hayvan Dostları</h1>
+            <h1 class="text-3xl font-bold text-white mb-2">
+                <span>Satın Alma</span>
+                <span style="color: var(--action-mint);">Yuva Ol</span>
+            </h1>
             <p class="text-purple-100">Hoş geldiniz!</p>
         </div>
 

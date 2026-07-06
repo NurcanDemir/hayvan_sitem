@@ -8,7 +8,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Paneli</title>
+    <title>Satın Alma Yuva Ol | Admin Paneli</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <link href="../dist/output.css" rel="stylesheet"> 
     
@@ -25,6 +28,7 @@
         }
 
         body {
+            font-family: 'Poppins', sans-serif;
             background:
                 radial-gradient(circle at 10% 14%, rgba(255, 179, 198, 0.3), transparent 42%),
                 radial-gradient(circle at 88% 8%, rgba(168, 218, 220, 0.3), transparent 40%),
@@ -78,23 +82,30 @@
             color: var(--text-dark) !important;
         }
 
-        .bg-red-600,
-        .bg-red-700,
         .bg-blue-600,
         .bg-indigo-600,
         .bg-emerald-600,
         .bg-green-600,
-        .bg-purple-600,
-        .bg-pink-600,
-        .btn,
-        button,
-        input[type="submit"],
+        .btn-primary,
+        button[type="submit"],
         .swal2-confirm {
             background: var(--action-mint) !important;
             color: var(--text-dark) !important;
             border: none !important;
             border-radius: 14px !important;
             box-shadow: 0 10px 24px rgba(43, 45, 66, 0.12) !important;
+        }
+
+        .bg-red-600,
+        .bg-red-700,
+        .bg-purple-600,
+        .bg-pink-600,
+        .btn,
+        button {
+            background: var(--primary-pink) !important;
+            color: var(--text-dark) !important;
+            border: 1px solid rgba(43, 45, 66, 0.08) !important;
+            border-radius: 14px !important;
         }
 
         .hover\:bg-gray-700:hover,
@@ -135,7 +146,9 @@
     
     <div id="sidebar" class="bg-gray-900 text-white p-5 flex flex-col items-stretch sticky top-0 bottom-0 left-0 overflow-y-auto shadow-lg flex-shrink-0" style="width: 250px;"> 
         <a class="text-white text-2xl font-bold text-center block mb-8 px-4 py-2 tracking-wide no-underline" href="admin_panel.php">
-            <i class="fas fa-paw mr-2 text-yellow-400"></i> Admin Paneli
+            <i class="fas fa-paw mr-2 text-yellow-400"></i>
+            <span>Satın Alma</span>
+            <span style="color: var(--action-mint);">Yuva Ol</span>
         </a>
         
         <ul class="flex flex-col space-y-2 flex-grow"> <li class="w-full">

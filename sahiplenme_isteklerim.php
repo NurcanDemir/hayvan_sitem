@@ -10,7 +10,7 @@ if (!isset($_SESSION['kullanici_id'])) {
     exit();
 }
 
-$page_title = "Sahiplenme İsteklerim - Hayvan Dostları";
+$page_title = "Sahiplenme İsteklerim - Satın Alma Yuva Ol";
 include("includes/db.php");
 include("includes/header.php");
 
