@@ -149,13 +149,37 @@
         </div>
         
         <div class="footer">
-            <p>Bu e-posta <strong>Yuva Ol</strong> sistemi tarafından otomatik olarak gönderilmiştir.</p>
-            <p style="margin-top: 10px; font-style: italic;">
-                🐾 <strong>Onlar İçin Yuva, Senin İçin Dostluk</strong> 🐾
-            </p>
-            <p style="margin-top: 15px; font-size: 12px; color: #999;">
-                Bu e-postayı aldığınız için <?= htmlspecialchars($baslik) ?> etkinliğine kayıt olmuşsunuz.
-            </p>
+            <div style="margin-bottom: 15px;">
+                <p style="margin: 0; font-weight: bold; color: #333;">
+                    Bu e-posta <strong>Yuva Ol</strong> sistemi tarafından otomatik olarak gönderilmiştir.
+                </p>
+            </div>
+            
+            <div style="margin: 15px 0; padding: 15px; background: linear-gradient(135deg, #fdf2f8, #fce7f3); border-radius: 8px;">
+                <p style="margin: 0; font-style: italic; color: #be185d; font-weight: bold;">
+                    🐾 <strong>"Onlar İçin Yuva, Senin İçin Dostluk"</strong> 🐾
+                </p>
+            </div>
+            
+            <div style="border-top: 2px solid #ec4899; padding-top: 15px; margin-top: 20px;">
+                <p style="font-size: 12px; color: #666; margin: 3px 0;">
+                    © 2025 <strong>Yuva Ol</strong> - Hayvan Sahiplendirme Platformu
+                </p>
+                <p style="font-size: 11px; color: #999; margin: 3px 0;">
+                    Sokak hayvanlarının korunması ve sahiplendirilmesi amacıyla hizmet vermektedir.
+                </p>
+                <p style="font-size: 11px; color: #999; margin: 8px 0;">
+                    📧 info@yuvaol.com | 🆘 destek@yuvaol.com | 📞 +90 312 555 01 23
+                </p>
+                <p style="font-size: 10px; color: #aaa; margin: 8px 0;">
+                    Bu e-postayı <strong><?= htmlspecialchars($baslik ?? 'Etkinlik') ?></strong> için kayıt olduğunuz için aldınız.
+                </p>
+                <p style="font-size: 10px; color: #aaa; margin: 5px 0;">
+                    🔗 <a href="https://yuvaol.com" style="color: #ec4899;">www.yuvaol.com</a> | 
+                    📘 <a href="https://facebook.com/yuvaol" style="color: #ec4899;">Facebook</a> | 
+                    📷 <a href="https://instagram.com/yuvaol" style="color: #ec4899;">Instagram</a>
+                </p>
+            </div>
         </div>
     </div>
 </body>

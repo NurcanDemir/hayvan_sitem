@@ -3,9 +3,7 @@
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
-$page_title = "Sahiplendirme İlanları - Sıcak Patizi";
 include("includes/db.php"); // Veritabanı bağlantısı
-include("includes/header.php"); // Tema ve Header
 
 // Kategoriler
 $kategoriler = [];
@@ -90,31 +88,40 @@ $stmt = $conn->prepare($sql);
 if ($params) $stmt->bind_param($types, ...$params);
 $stmt->execute();
 $result = $stmt->get_result();
-$user_id = $_SESSION['kullanici_id'] ?? null;
+$user_id = $_SESSION['kullanici_id'] ?? null; // user_id veya kullanici_id'nizi kontrol edin
 ?>
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sahiplendirme İlanları</title>
+    <link href="./dist/output.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        /* Custom Tailwind form select styling (if not already in input.css) */
+        .form-select-tailwind {
+            @apply block w-full px-3 py-2 text-base font-normal text-gray-700 bg-white bg-clip-padding bg-no-repeat border border-solid border-gray-300 rounded-md transition ease-in-out m-0
+                   focus:text-gray-700 focus:bg-white focus:border-koyu-pembe focus:outline-none;
+        }
 
-<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Sayfa Başlığı -->
-    <div class="text-center mb-10">
-        <h1 class="text-4xl font-bold text-gray-800 mb-3 flex items-center justify-center">
-            <i class="fas fa-paw text-primary mr-3"></i>
-            Sahiplendirme İlanları
-        </h1>
-        <p class="text-lg text-gray-600">Can dostlarımıza sıcak bir yuva olun, sevgiyi paylaşın</p>
-    </div>
+        /* Info Tag Styling for pastel look */
+        .info-tag-tailwind {
+            @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal min-h-screen flex flex-col">
 
-    <!-- Filtreler Kartı -->
-    <div class="bg-white rounded-xl shadow-lg p-6 mb-10 card-hover border border-pink-100/50">
-        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-            <i class="fas fa-filter text-primary mr-2"></i>
-            İlanlarda Ara & Filtrele
-        </h2>
-        <form method="GET" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 items-end">
+<?php include("includes/header.php"); ?>
+
+<div class="container mx-auto px-4 py-8 mt-16 md:mt-24 flex-grow"> <h1 class="text-4xl font-extrabold text-center text-koyu-pembe mb-8">Sahiplendirme İlanları</h1>
+
+    <form method="GET" class="bg-white p-6 rounded-lg shadow-md mb-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 items-end">
             <div>
-                <label for="kategori" class="block text-sm font-medium text-gray-700 mb-1">
-                    <i class="fas fa-tag mr-1 text-primary"></i>Tür
-                </label>
-                <select name="kategori_id" id="kategori" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm bg-white">
+                <label for="kategori" class="block text-gray-700 text-sm font-semibold mb-2">Hayvan Türü:</label>
+                <select name="kategori_id" id="kategori" class="form-select-tailwind">
                     <option value="">Tümü</option>
                     <?php foreach($kategoriler as $kat): ?>
                         <option value="<?= $kat['id'] ?>" <?= (@$_GET['kategori_id']==$kat['id'])?'selected':'' ?>><?= htmlspecialchars($kat['ad']) ?></option>
@@ -122,49 +129,40 @@ $user_id = $_SESSION['kullanici_id'] ?? null;
                 </select>
             </div>
             <div>
-                <label for="cins" class="block text-sm font-medium text-gray-700 mb-1">
-                    <i class="fas fa-paw mr-1 text-primary"></i>Cins
-                </label>
-                <select name="cins_id" id="cins" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm bg-white">
+                <label for="cins" class="block text-gray-700 text-sm font-semibold mb-2">Cins:</label>
+                <select name="cins_id" id="cins" class="form-select-tailwind">
                     <option value="">Tümü</option>
-                </select>
+                    </select>
             </div>
             <div>
-                <label for="il" class="block text-sm font-medium text-gray-700 mb-1">
-                    <i class="fas fa-map-marker-alt mr-1 text-primary"></i>İl
-                </label>
-                <select name="il_id" id="il" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm bg-white">
+                <label for="il" class="block text-gray-700 text-sm font-semibold mb-2">İl:</label>
+                <select name="il_id" id="il" class="form-select-tailwind">
                     <option value="">Tümü</option>
-                    <?php foreach($iller as $il_data): ?>
+                    <?php foreach($iller as $il_data): // $il değişken adı çakışmasından kaçınmak için $il_data kullanıldı ?>
                         <option value="<?= $il_data['id'] ?>" <?= (@$_GET['il_id']==$il_data['id'])?'selected':'' ?>><?= htmlspecialchars($il_data['ad']) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
             <div>
-                <label for="ilce" class="block text-sm font-medium text-gray-700 mb-1">
-                    <i class="fas fa-map-pin mr-1 text-primary"></i>İlçe
-                </label>
-                <select name="ilce_id" id="ilce" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm bg-white">
+                <label for="ilce" class="block text-gray-700 text-sm font-semibold mb-2">İlçe:</label>
+                <select name="ilce_id" id="ilce" class="form-select-tailwind">
                     <option value="">Tümü</option>
+                    </select>
+            </div>
+            <div>
+                <label for="hastalik" class="block text-gray-700 text-sm font-semibold mb-2">Hastalık:</label>
+                <select name="hastalik_id" id="hastalik" class="form-select-tailwind">
+                    <option value="">Tümü</option>
+                    <!-- Hastalıklar dinamik olarak yüklenecek -->
                 </select>
             </div>
             <div>
-                <label for="hastalik" class="block text-sm font-medium text-gray-700 mb-1">
-                    <i class="fas fa-heartbeat mr-1 text-primary"></i>Hastalık
-                </label>
-                <select name="hastalik_id" id="hastalik" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm bg-white">
-                    <option value="">Tümü</option>
-                </select>
-            </div>
-            <div>
-                <button type="submit" class="w-full btn-gradient text-white font-semibold py-2 px-4 rounded-lg transition duration-300 flex items-center justify-center">
-                    <i class="fas fa-search mr-2"></i>Filtrele
+                <button type="submit" class="bg-koyu-pembe hover:bg-pink-700 text-white font-bold py-2 px-4 rounded w-full transition duration-300">
+                    <i class="fas fa-filter mr-2"></i>Filtrele
                 </button>
             </div>
-        </form>
-    </div>
-
-    <!-- İlan Kartları Grid -->
+        </div>
+    </form>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         <?php if ($result && $result->num_rows > 0): ?>
             <?php while ($ilan = $result->fetch_assoc()): ?>
@@ -172,91 +170,64 @@ $user_id = $_SESSION['kullanici_id'] ?? null;
                 // Favori kontrolü
                 $is_favorited = false;
                 if ($user_id) {
-                    $stmt_fav = $conn->prepare("SELECT COUNT(*) FROM favoriler WHERE kullanici_id = ? AND ilan_id = ?");
-                    $stmt_fav->bind_param("ii", $user_id, $ilan['id']);
-                    $stmt_fav->execute();
-                    $stmt_fav->bind_result($fav_count);
-                    $stmt_fav->fetch();
-                    $stmt_fav->close();
+                    $stmt = $conn->prepare("SELECT COUNT(*) FROM favoriler WHERE kullanici_id = ? AND ilan_id = ?");
+                    $stmt->bind_param("ii", $user_id, $ilan['id']);
+                    $stmt->execute();
+                    $stmt->bind_result($fav_count);
+                    $stmt->fetch();
+                    $stmt->close();
                     if ($fav_count > 0) $is_favorited = true;
                 }
                 ?>
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover flex flex-col justify-between">
-                    <div class="relative">
-                        <?php
-                        $image_path = !empty($ilan['foto']) ? 'uploads/' . htmlspecialchars($ilan['foto']) : '';
-                        $display_image = (file_exists($image_path) && !empty($image_path)) ? $image_path : 'https://via.placeholder.com/300x200?text=Resim+Yok';
-                        ?>
-                        <img src="<?= $display_image ?>" alt="<?= htmlspecialchars($ilan['baslik']) ?>" class="w-full h-48 object-cover">
-
-                        <!-- Favori Butonu -->
+                <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 flex items-center p-3 gap-3 relative">
+                    <div class="w-24 h-24 flex-shrink-0">
+                        <img src="uploads/<?= htmlspecialchars($ilan['foto'] ?: 'placeholder.jpg') ?>" alt="<?= htmlspecialchars($ilan['baslik']) ?>"
+                             class="rounded-full w-full h-full object-cover border-2 border-koyu-pembe shadow-sm">
                         <?php if ($user_id): ?>
-                            <button class="favorite-btn absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-md <?= $is_favorited ? 'text-primary' : 'text-gray-400 hover:text-primary' ?> transition-colors duration-200"
-                                    data-ilan-id="<?= $ilan['id'] ?>">
+                            <button class="favorite-btn absolute -top-1 -right-1 z-10 bg-white rounded-full p-1 text-base shadow-md
+                                <?= $is_favorited ? 'text-koyu-pembe' : 'text-gray-400 hover:text-koyu-pembe' ?> transition-colors duration-200"
+                                data-ilan-id="<?= $ilan['id'] ?>">
                                 <i class="fas fa-heart"></i>
                             </button>
                         <?php endif; ?>
                     </div>
-
-                    <div class="p-4 flex-1 flex flex-col justify-between">
-                        <div>
-                            <h3 class="text-lg font-bold text-gray-800 mb-2 line-clamp-1"><?= htmlspecialchars($ilan['baslik']) ?></h3>
-
-                            <!-- Etiketler -->
-                            <div class="flex flex-wrap gap-1.5 mb-3">
-                                <?php if (!empty($ilan['kategori_ad'])): ?>
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-primary-light text-primary">
-                                        <i class="fas fa-tag mr-1"></i><?= htmlspecialchars($ilan['kategori_ad']) ?>
-                                    </span>
-                                <?php endif; ?>
-
-                                <?php if (!empty($ilan['cins_ad'])): ?>
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                        <i class="fas fa-paw mr-1"></i><?= htmlspecialchars($ilan['cins_ad']) ?>
-                                    </span>
-                                <?php endif; ?>
-
-                                <?php if (!empty($ilan['il_ad'])): ?>
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                                        <i class="fas fa-map-marker-alt mr-1"></i><?= htmlspecialchars($ilan['il_ad']) ?><?= !empty($ilan['ilce_ad']) ? ' / ' . htmlspecialchars($ilan['ilce_ad']) : '' ?>
-                                    </span>
-                                <?php endif; ?>
-
-                                <?php if (!empty($ilan['hastalik_ad'])): ?>
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                                        <i class="fas fa-heartbeat mr-1"></i><?= htmlspecialchars($ilan['hastalik_ad']) ?>
-                                    </span>
-                                <?php endif; ?>
+                    <div class="flex-grow flex flex-col justify-between">
+                        <h2 class="text-lg font-semibold text-gray-800 leading-tight mb-1"><?= htmlspecialchars($ilan['baslik']) ?></h2>
+                        <div class="flex flex-wrap gap-1 text-sm mb-2">
+                            <?php if (!empty($ilan['kategori_ad'])): ?>
+                                <span class="info-tag-tailwind bg-toz-pembe text-koyu-pembe">
+                                    <i class="fas fa-folder mr-1"></i><?= htmlspecialchars($ilan['kategori_ad']) ?>
+                                </span>
+                            <?php endif; ?>
+                            <?php if (!empty($ilan['il_ad'])): ?>
+                                <span class="info-tag-tailwind bg-gray-200 text-gray-700">
+                                    <i class="fas fa-map-marker-alt mr-1"></i><?= htmlspecialchars($ilan['il_ad']) ?>
+                                </span>
+                            <?php endif; ?>
+                            <?php if (!empty($ilan['ilce_ad'])): ?>
+                                <span class="info-tag-tailwind bg-gray-200 text-gray-700">
+                                    <i class="fas fa-map-pin mr-1"></i><?= htmlspecialchars($ilan['ilce_ad']) ?>
+                                </span>
+                            <?php endif; ?>
                             </div>
-
-                            <p class="text-gray-600 text-sm mb-4 line-clamp-2"><?= htmlspecialchars($ilan['aciklama'] ?? '') ?></p>
-                        </div>
-
-                        <div class="flex justify-between items-center pt-3 border-t border-gray-100 mt-auto">
-                            <span class="text-xs text-gray-500">
-                                <i class="fas fa-calendar mr-1"></i>
-                                <?= date('d.m.Y', strtotime($ilan['tarih'])) ?>
-                            </span>
-                            <a href="ilan_detay.php?id=<?= $ilan['id'] ?>" 
-                               class="btn-gradient text-white px-4 py-2 rounded-lg text-sm font-semibold hover:shadow-md transition">
-                                Detaylar
-                            </a>
-                        </div>
+                        <a href="ilan_detay.php?id=<?= $ilan['id'] ?>"
+                           class="block text-center bg-acik-pembe hover:bg-toz-pembe text-koyu-pembe text-sm font-semibold py-1 px-2 rounded-md transition duration-300">
+                           Detayları Görüntüle
+                        </a>
                     </div>
                 </div>
             <?php endwhile; ?>
         <?php else: ?>
-            <div class="col-span-full text-center py-16 bg-white rounded-xl shadow-lg card-hover">
-                <div class="text-6xl mb-4">🐾</div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-2">İlan Bulunamadı</h3>
-                <p class="text-gray-600 mb-6">Aradığınız kriterlere uygun henüz ilan bulunmuyor.</p>
-                <a href="ilan_ekle.php" class="btn-gradient text-white px-6 py-3 rounded-lg font-semibold inline-flex items-center shadow-md">
-                    <i class="fas fa-plus mr-2"></i>İlk İlanı Sen Ver
-                </a>
+            <div class="col-span-full">
+                <div class="bg-soluk-mavi text-blue-900 p-4 rounded-lg text-center text-lg font-semibold shadow-md">
+                    Henüz aktif ilan bulunmamaktadır.
+                </div>
             </div>
         <?php endif; ?>
     </div>
-</main>
+</div>
+
+<?php include("includes/footer.php"); ?>
 
 <script>
     const cinsler = <?= json_encode($cinsler) ?>;
@@ -264,12 +235,14 @@ $user_id = $_SESSION['kullanici_id'] ?? null;
     const hastaliklarCins = <?= json_encode($hastaliklar_cins) ?>;
 
     document.addEventListener("DOMContentLoaded", function() {
+        // Elements
         const kategoriSelect = document.getElementById('kategori');
         const cinsSelect = document.getElementById('cins');
         const hastalikSelect = document.getElementById('hastalik');
         const ilSelect = document.getElementById('il');
         const ilceSelect = document.getElementById('ilce');
 
+        // Functions
         function populateCins(kategoriId, selectedCinsId = null) {
             cinsSelect.innerHTML = '<option value="">Tümü</option>';
             if (cinsler[kategoriId]) {
@@ -283,6 +256,7 @@ $user_id = $_SESSION['kullanici_id'] ?? null;
                     cinsSelect.appendChild(option);
                 });
             }
+            // Reset hastalık when kategori changes
             populateHastalik('', null);
         }
 
@@ -316,21 +290,25 @@ $user_id = $_SESSION['kullanici_id'] ?? null;
             }
         }
 
+        // Event listeners
         if (kategoriSelect && cinsSelect) {
             kategoriSelect.addEventListener('change', function() {
-                populateCins(this.value);
+                const kategoriId = this.value;
+                populateCins(kategoriId);
             });
         }
 
         if (cinsSelect && hastalikSelect) {
             cinsSelect.addEventListener('change', function() {
-                populateHastalik(this.value);
+                const cinsId = this.value;
+                populateHastalik(cinsId);
             });
         }
 
         if (ilSelect && ilceSelect) {
             ilSelect.addEventListener('change', function() {
-                populateIlce(this.value);
+                const ilId = this.value;
+                populateIlce(ilId);
             });
         }
 
@@ -351,17 +329,16 @@ $user_id = $_SESSION['kullanici_id'] ?? null;
                 .then(res => {
                     if (res.status === 'success') {
                         if (res.action === 'added') {
-                            currentButton.classList.remove('text-gray-400', 'hover:text-primary');
-                            currentButton.classList.add('text-primary');
+                            currentButton.classList.remove('text-gray-400', 'hover:text-koyu-pembe');
+                            currentButton.classList.add('text-koyu-pembe');
                         } else {
-                            currentButton.classList.remove('text-primary');
-                            currentButton.classList.add('text-gray-400', 'hover:text-primary');
+                            currentButton.classList.remove('text-koyu-pembe');
+                            currentButton.classList.add('text-gray-400', 'hover:text-koyu-pembe');
                         }
                     } else {
+                        alert(res.message);
                         if (res.redirect) {
                             window.location.href = res.redirect;
-                        } else {
-                            alert(res.message);
                         }
                     }
                 })
@@ -372,7 +349,7 @@ $user_id = $_SESSION['kullanici_id'] ?? null;
             });
         });
 
-        // Current GET params
+        // Initialize dropdowns based on current GET parameters
         <?php if (!empty($_GET['kategori_id'])): ?>
             const initialKategoriId = '<?= (int)$_GET['kategori_id'] ?>';
             populateCins(initialKategoriId, '<?= (int)($_GET['cins_id'] ?? 0) ?>');
@@ -392,4 +369,3 @@ $user_id = $_SESSION['kullanici_id'] ?? null;
     });
 </script>
 
-<?php include("includes/footer.php"); ?>

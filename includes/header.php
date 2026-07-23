@@ -1,5 +1,10 @@
 <?php
 // filepath: c:\xampp\htdocs\hayvan_sitem\includes\header.php
+<<<<<<< Updated upstream
+=======
+
+// Oturum henüz başlatılmadıysa başlat
+>>>>>>> Stashed changes
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
@@ -7,6 +12,7 @@ if (session_status() == PHP_SESSION_NONE) {
 // Get current page name for active nav highlighting
 $current_page = basename($_SERVER['PHP_SELF']);
 
+<<<<<<< Updated upstream
 // Check if user is logged in
 $is_logged_in = isset($_SESSION['kullanici_id']);
 $kullanici_adi = $_SESSION['kullanici_adi'] ?? '';
@@ -318,8 +324,24 @@ if ($is_logged_in && $user_id) {
                             <span class="ml-1" style="color: var(--brand-highlight);">Patizi</span>
                         </span>
                     </a>
+=======
+<!-- SADECE HEADER NAVİGASYON - DOCTYPE YOK! -->
+<header class="bg-white shadow-lg sticky top-0 z-50">
+    <nav class="max-w-7xl mx-auto px-6 py-4">
+        <div class="flex items-center justify-between">
+            <!-- Logo -->
+            <div class="flex items-center space-x-3">
+                <div class="text-3xl">🐾</div>
+                <div>
+                    <h1 class="text-2xl font-bold text-primary">
+                        <a href="index.php">Yuva Ol</a>
+                    </h1>
+                    <span class="text-xs text-gray-500">Hayvan Sahiplendirme</span>
+>>>>>>> Stashed changes
                 </div>
+            </div>
 
+<<<<<<< Updated upstream
                 <!-- Desktop Navigation Links -->
                 <div class="hidden md:flex items-center space-x-8 nav-links">
                     <a href="index.php" class="nav-link text-gray-600 hover:text-purple-600 px-3 py-2 <?= $current_page == 'index.php' ? 'active' : '' ?>">
@@ -508,3 +530,109 @@ if ($is_logged_in && $user_id) {
             });
         });
     </script>
+=======
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="index.php" class="text-gray-600 hover:text-primary <?= $current_page == 'index.php' ? 'text-primary font-bold' : '' ?>">
+                    <i class="fas fa-home mr-1"></i>Ana Sayfa
+                </a>
+                <a href="ilanlar.php" class="text-gray-600 hover:text-primary <?= $current_page == 'ilanlar.php' ? 'text-primary font-bold' : '' ?>">
+                    <i class="fas fa-list mr-1"></i>Sahiplendirme
+                </a>
+                <a href="barinaklar.php" class="text-gray-600 hover:text-primary <?= $current_page == 'barinaklar.php' ? 'text-primary font-bold' : '' ?>">
+                    <i class="fas fa-building mr-1"></i>Barınaklar
+                </a>
+                <a href="etkinlikler.php" class="text-gray-600 hover:text-primary <?= $current_page == 'etkinlikler.php' ? 'text-primary font-bold' : '' ?>">
+                    <i class="fas fa-calendar mr-1"></i>Etkinlikler
+                </a>
+                
+                <?php if (isset($_SESSION['kullanici_id'])): ?>
+                    <a href="ilan_ekle.php" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
+                        <i class="fas fa-plus mr-2"></i>İlan Ver
+                    </a>
+                    <span class="text-gray-600">Hoş geldin, <strong class="text-primary"><?= htmlspecialchars($_SESSION['kullanici_adi'] ?? 'Kullanıcı') ?></strong></span>
+                    <a href="cikis.php" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Çıkış
+                    </a>
+                <?php else: ?>
+                    <a href="giris.php" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-opacity-80">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Giriş
+                    </a>
+                    <a href="kayit.php" class="border border-primary text-primary px-4 py-2 rounded-lg hover:bg-primary hover:text-white">
+                        <i class="fas fa-user-plus mr-2"></i>Kayıt
+                    </a>
+                <?php endif; ?>
+            </div>
+
+            <!-- Mobile Button -->
+            <div class="md:hidden">
+                <button id="mobile-btn" class="text-gray-600 hover:text-primary">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden mt-4 pt-4 border-t">
+            <div class="space-y-3">
+                <a href="index.php" class="block text-gray-600 hover:text-primary py-2">
+                    <i class="fas fa-home mr-3"></i>Ana Sayfa
+                </a>
+                <a href="ilanlar.php" class="block text-gray-600 hover:text-primary py-2">
+                    <i class="fas fa-list mr-3"></i>Sahiplendirme
+                </a>
+                <a href="barinaklar.php" class="block text-gray-600 hover:text-primary py-2">
+                    <i class="fas fa-building mr-3"></i>Barınaklar
+                </a>
+                <a href="etkinlikler.php" class="block text-gray-600 hover:text-primary py-2">
+                    <i class="fas fa-calendar mr-3"></i>Etkinlikler
+                </a>
+                
+                <?php if (isset($_SESSION['kullanici_id'])): ?>
+                    <div class="border-t pt-3 mt-3">
+                        <a href="ilan_ekle.php" class="block bg-green-500 text-white px-4 py-2 rounded text-center mb-3">
+                            <i class="fas fa-plus mr-2"></i>İlan Ver
+                        </a>
+                        <div class="text-gray-600 py-2 text-center">
+                            Hoş geldin, <strong class="text-primary"><?= htmlspecialchars($_SESSION['kullanici_adi'] ?? 'Kullanıcı') ?></strong>
+                        </div>
+                        <a href="cikis.php" class="block bg-red-500 text-white px-4 py-2 rounded text-center">
+                            <i class="fas fa-sign-out-alt mr-2"></i>Çıkış
+                        </a>
+                    </div>
+                <?php else: ?>
+                    <div class="border-t pt-3 mt-3 space-y-3">
+                        <a href="giris.php" class="block bg-primary text-white px-4 py-2 rounded text-center">
+                            <i class="fas fa-sign-in-alt mr-2"></i>Giriş
+                        </a>
+                        <a href="kayit.php" class="block border border-primary text-primary px-4 py-2 rounded text-center">
+                            <i class="fas fa-user-plus mr-2"></i>Kayıt
+                        </a>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<!-- Script'i head'de değil, body'nin sonunda çalıştır -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Header script yüklendi');
+    
+    const mobileBtn = document.getElementById('mobile-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    
+    if (mobileBtn && mobileMenu) {
+        console.log('Mobile menu elementi bulundu');
+        
+        mobileBtn.addEventListener('click', function() {
+            console.log('Mobile menu butonu tıklandı');
+            mobileMenu.classList.toggle('hidden');
+        });
+    } else {
+        console.log('Mobile menu elementi bulunamadı');
+    }
+});
+</script>
+>>>>>>> Stashed changes
