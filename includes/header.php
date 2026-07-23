@@ -30,7 +30,7 @@ if ($is_logged_in && $user_id) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $page_title ?? 'Satın Alma Yuva Ol' ?></title>
+    <title><?= $page_title ?? 'Sıcak Patizi' ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -314,8 +314,8 @@ if ($is_logged_in && $user_id) {
                             <i class="fas fa-paw text-white text-lg"></i>
                         </div>
                         <span class="text-xl font-bold text-gray-800">
-                            <span>Satın Alma</span>
-                            <span class="ml-1" style="color: var(--brand-highlight);">Yuva Ol</span>
+                            <span>Sıcak</span>
+                            <span class="ml-1" style="color: var(--brand-highlight);">Patizi</span>
                         </span>
                     </a>
                 </div>

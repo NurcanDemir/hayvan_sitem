@@ -19,25 +19,15 @@ if (isset($_SESSION['hata_mesaj'])) {
     $hata_mesaj = $_SESSION['hata_mesaj'];
     unset($_SESSION['hata_mesaj']);
 }
+$page_title = "Sahiplenme Taleplerim - Sıcak Patizi";
+include("includes/header.php");
 ?>
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taleplerim</title>
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    
-    <link href="./dist/output.css" rel="stylesheet">
-</head>
-<body class="bg-gray-50 font-sans min-h-screen flex flex-col">
 
-<?php include("includes/header.php"); ?>
-
-<div class="container mx-auto p-4 flex-grow pt-20">
-    <div class="max-w-6xl mx-auto bg-white p-8 rounded-lg shadow-xl mt-8">
-        <h2 class="text-3xl font-bold text-center mb-8">Sahiplenme Taleplerim</h2>
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
+    <div class="max-w-6xl mx-auto bg-white p-8 rounded-xl shadow-lg card-hover">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8 flex items-center justify-center">
+            <i class="fas fa-heart text-primary mr-3"></i>Sahiplenme Taleplerim
+        </h1>
         
         <?php if (!empty($hata_mesaj)): ?>
             <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
@@ -152,7 +142,7 @@ if (isset($_SESSION['hata_mesaj'])) {
                     <i class="fas fa-inbox text-gray-400 text-5xl mb-4"></i>
                     <h3 class="text-xl font-semibold text-gray-600 mb-2">Henüz Talep Bulunmuyor</h3>
                     <p class="text-gray-500 mb-4">Sahiplenme talebi oluşturmak için ilanları incelemeye başlayın.</p>
-                    <a href="ilanlar.php" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition duration-200">
+                    <a href="ilanlar.php" class="btn-gradient text-white px-6 py-2 rounded-lg font-semibold inline-flex items-center shadow-md">
                         <i class="fas fa-search mr-2"></i>
                         İlanları İncele
                     </a>
@@ -160,19 +150,6 @@ if (isset($_SESSION['hata_mesaj'])) {
             <?php endif; ?>
         </div>
     </div>
-</div>
-
-<!-- Footer -->
-<footer class="bg-gray-800 text-white py-12 mt-16">
-    <div class="max-w-7xl mx-auto px-6">
-        <div class="text-center">
-            <div class="text-3xl mb-4">🏠</div>
-            <h3 class="text-2xl font-bold mb-4 text-primary-lighter">Yuva Ol</h3>
-            <p class="text-gray-400">Sevgiyle Sahiplen</p>
-        </div>
-    </div>
-</footer>
+</main>
 
 <?php include("includes/footer.php"); ?>
-</body>
-</html>

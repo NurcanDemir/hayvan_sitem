@@ -160,103 +160,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ekle'])) {
         }
     }
 }
+$page_title = "Yeni İlan Oluştur - Sıcak Patizi";
+include("includes/header.php");
 ?>
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yeni İlan Oluştur</title>
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    
-    <link href="./dist/output.css" rel="stylesheet">
-    
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <style>
-        :root {
-            --bg-light: #F8F9FA;
-            --primary-pink: #FFB3C6;
-            --action-mint: #A8DADC;
-            --text-dark: #2B2D42;
-        }
+<style>
+    .pet-form-card {
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid var(--primary-pink);
+        border-radius: 16px;
+        box-shadow: 0 16px 36px rgba(43, 45, 66, 0.12);
+    }
 
-        .form-page-wrap {
-            background:
-                radial-gradient(circle at 12% 16%, rgba(255, 179, 198, 0.25), transparent 42%),
-                radial-gradient(circle at 88% 12%, rgba(168, 218, 220, 0.25), transparent 38%),
-                var(--bg-light);
-        }
+    .pet-form-card input[type="text"],
+    .pet-form-card input[type="number"],
+    .pet-form-card input[type="file"],
+    .pet-form-card textarea,
+    .pet-form-card select {
+        border: 1px solid #d1d5db !important;
+        border-radius: 10px !important;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
 
-        .pet-form-card {
-            background: rgba(255, 255, 255, 0.92);
-            border: 1px solid var(--primary-pink);
-            border-radius: 16px;
-            box-shadow: 0 16px 36px rgba(43, 45, 66, 0.12);
-            backdrop-filter: blur(2px);
-        }
+    .pet-form-card input:focus,
+    .pet-form-card textarea:focus,
+    .pet-form-card select:focus {
+        border-color: var(--action-mint) !important;
+        box-shadow: 0 0 0 3px rgba(168, 218, 220, 0.4) !important;
+        outline: none;
+    }
 
-        .pet-form-card h1,
-        .pet-form-card label,
-        .pet-form-card p,
-        .pet-form-card span {
-            color: var(--text-dark);
-        }
+    .pet-form-card .submit-btn {
+        background: var(--action-mint) !important;
+        color: var(--text-dark) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        font-weight: 600;
+        box-shadow: 0 10px 24px rgba(43, 45, 66, 0.12);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
 
-        .pet-form-card input[type="text"],
-        .pet-form-card input[type="number"],
-        .pet-form-card input[type="file"],
-        .pet-form-card textarea,
-        .pet-form-card select {
-            border: 1px solid var(--primary-pink) !important;
-            border-radius: 12px !important;
-            background-color: #ffffff !important;
-            color: var(--text-dark) !important;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
+    .pet-form-card .submit-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 14px 30px rgba(43, 45, 66, 0.16);
+    }
+</style>
 
-        .pet-form-card input::placeholder,
-        .pet-form-card textarea::placeholder {
-            color: rgba(43, 45, 66, 0.65);
-        }
-
-        .pet-form-card input:focus,
-        .pet-form-card textarea:focus,
-        .pet-form-card select:focus {
-            border-color: var(--action-mint) !important;
-            box-shadow: 0 0 0 4px rgba(168, 218, 220, 0.34) !important;
-            outline: none;
-        }
-
-        .pet-form-card .submit-btn {
-            background: var(--action-mint) !important;
-            color: #ffffff !important;
-            border: none !important;
-            border-radius: 14px !important;
-            box-shadow: 0 12px 26px rgba(43, 45, 66, 0.16);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .pet-form-card .submit-btn:hover {
-            background: #8fcfd1 !important;
-            color: #ffffff !important;
-            transform: translateY(-1px);
-            box-shadow: 0 16px 30px rgba(43, 45, 66, 0.18);
-        }
-
-        .pet-form-card .submit-btn i {
-            color: #ffffff !important;
-        }
-    </style>
-</head>
-<body class="bg-gray-50 font-sans min-h-screen flex flex-col form-page-wrap">
-
-<?php include("includes/header.php"); ?>
-
-<div class="container mx-auto p-4 flex-grow pt-20">
-    <div class="max-w-4xl mx-auto p-8 mt-8 pet-form-card">
-    <h1 class="text-3xl font-bold text-center mb-8">Yeni İlan Oluştur</h1>
+<main class="max-w-4xl mx-auto px-4 sm:px-6 py-8 flex-grow">
+    <div class="p-8 pet-form-card shadow-lg">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8 flex items-center justify-center">
+            <i class="fas fa-plus-circle text-primary mr-3"></i>Yeni İlan Oluştur
+        </h1>
 
     <?php if (!empty($mesaj)): ?>
         <div class="p-4 mb-4 rounded-md text-center <?= $mesaj_tur == 'success' ? 'bg-green-100 text-green-700' : ($mesaj_tur == 'danger' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700') ?>">
@@ -530,9 +484,6 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
     </div>
-</div>
+</main>
 
 <?php include("includes/footer.php"); ?>
-
-</body>
-</html>

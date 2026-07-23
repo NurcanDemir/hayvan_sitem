@@ -1,12 +1,12 @@
 <?php
-$page_title = "Hakkımızda - Satın Alma Yuva Ol";
+$page_title = "Hakkımızda - Sıcak Patizi";
 include("includes/header.php");
 ?>
 
 <div class="about-page-shell">
     <main class="about-page container mx-auto px-4 py-10 mt-10">
         <section class="about-hero">
-            <h1>Satın Alma <span>Yuva Ol</span></h1>
+            <h1>Sıcak <span>Patizi</span></h1>
             <p>
                 Biz, can dostlarin satin alinacak bir urun degil; sevgiyle yasatilacak bir aile uyesi olduguna inanan bir topluluguz.
                 Platformumuz, sahiplendirme surecini herkes icin daha seffaf, guvenli ve kolay hale getirmek icin tasarlandi.

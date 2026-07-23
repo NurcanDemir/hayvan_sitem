@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Satın Alma Yuva Ol | Admin Giriş</title>
+    <title>Sıcak Patizi | Admin Giriş</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -124,8 +124,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div class="card shadow-sm">
             <div class="card-header text-center">
                 <h3>
-                    <span>Satın Alma</span>
-                    <span style="color: var(--brand-highlight);">Yuva Ol</span>
+                    <span>Sıcak</span>
+                    <span style="color: var(--brand-highlight);">Patizi</span>
                     <span>Admin Giriş</span>
                 </h3>
             </div>

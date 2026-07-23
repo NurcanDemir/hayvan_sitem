@@ -3,7 +3,7 @@ if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-$page_title = "Barınaklar - Satın Alma Yuva Ol";
+$page_title = "Barınaklar - Sıcak Patizi";
 include("includes/db.php");
 include("includes/header.php"); // Use the standardized header
 

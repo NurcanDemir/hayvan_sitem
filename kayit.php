@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kayıt Ol - Satın Alma Yuva Ol</title>
+    <title>Kayıt Ol - Sıcak Patizi</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -118,21 +118,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="max-w-md w-full">
         <!-- Header -->
         <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full mb-4">
-                <i class="fas fa-paw text-2xl text-purple-600"></i>
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full mb-4 shadow-md">
+                <i class="fas fa-paw text-2xl text-primary"></i>
             </div>
-            <h1 class="text-3xl font-bold text-white mb-2">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">
                 <span>Satın Alma</span>
                 <span style="color: var(--brand-highlight);">Yuva Ol</span>
             </h1>
-            <p class="text-purple-100">Hayvanlar için bir yuva bulun</p>
+            <p class="text-gray-600">Hayvanlar için bir yuva bulun</p>
         </div>
 
         <!-- Registration Form -->
         <div class="bg-white rounded-2xl shadow-2xl p-8">
             <div class="text-center mb-6">
                 <h2 class="text-2xl font-bold text-gray-800 mb-2">Hesap Oluştur</h2>
-                <p class="text-gray-600">Satın Alma Yuva Ol topluluğuna katılın</p>
+                <p class="text-gray-600">Sıcak Patizi topluluğuna katılın</p>
             </div>
 
             <?php if ($error): ?>
@@ -242,7 +242,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <!-- Submit Button -->
                 <button 
                     type="submit" 
-                    class="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white py-3 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-purple-800 focus:ring-4 focus:ring-purple-300 transition duration-200 transform hover:scale-105"
+                    class="w-full btn-gradient text-white py-3 px-4 rounded-xl font-semibold transition duration-200 shadow-md flex items-center justify-center"
                 >
                     <i class="fas fa-user-plus mr-2"></i>Hesap Oluştur
                 </button>
@@ -252,7 +252,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="text-center mt-6 pt-6 border-t border-gray-200">
                 <p class="text-gray-600">
                     Zaten hesabınız var mı? 
-                    <a href="giris.php" class="text-purple-600 hover:text-purple-800 font-medium">
+                    <a href="giris.php" class="text-primary hover:underline font-semibold">
                         Giriş yapın
                     </a>
                 </p>
@@ -263,10 +263,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!-- Footer -->
         <div class="text-center mt-6">
-            <p class="text-purple-100 text-sm">
-                <i class="fas fa-heart mr-1"></i>
-                Hayvanlar için yapıldı
-            </p>
+            <a href="index.php" class="text-gray-600 hover:text-gray-800 font-medium">
+                <i class="fas fa-home mr-2"></i>Ana Sayfaya Dön
+            </a>
         </div>
     </div>
 

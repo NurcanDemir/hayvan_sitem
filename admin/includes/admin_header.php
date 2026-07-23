@@ -8,7 +8,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Satın Alma Yuva Ol | Admin Paneli</title>
+    <title>Sıcak Patizi | Admin Paneli</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -148,8 +148,8 @@
     <div id="sidebar" class="bg-gray-900 text-white p-5 flex flex-col items-stretch sticky top-0 bottom-0 left-0 overflow-y-auto shadow-lg flex-shrink-0" style="width: 250px;"> 
         <a class="text-white text-2xl font-bold text-center block mb-8 px-4 py-2 tracking-wide no-underline" href="admin_panel.php">
             <i class="fas fa-paw mr-2 text-yellow-400"></i>
-            <span>Satın Alma</span>
-            <span style="color: var(--brand-highlight);">Yuva Ol</span>
+            <span>Sıcak</span>
+            <span style="color: var(--brand-highlight);">Patizi</span>
         </a>
         
         <ul class="flex flex-col space-y-2 flex-grow"> <li class="w-full">

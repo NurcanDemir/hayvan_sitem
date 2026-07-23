@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giriş Yap - Satın Alma Yuva Ol</title>
+    <title>Giriş Yap - Sıcak Patizi</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -95,27 +95,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="max-w-md w-full">
         <!-- Header -->
         <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full mb-4">
-                <i class="fas fa-paw text-2xl text-purple-600"></i>
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full mb-4 shadow-md">
+                <i class="fas fa-paw text-2xl text-primary"></i>
             </div>
-            <h1 class="text-3xl font-bold text-white mb-2">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">
                 <span>Satın Alma</span>
                 <span style="color: var(--brand-highlight);">Yuva Ol</span>
             </h1>
-            <p class="text-purple-100">Hoş geldiniz!</p>
+            <p class="text-gray-600">Hoş geldiniz!</p>
         </div>
 
         <!-- Login Form -->
-        <div class="bg-white rounded-2xl shadow-2xl p-8">
+        <div class="bg-white rounded-2xl shadow-xl p-8 border border-pink-100/50">
             <div class="text-center mb-6">
                 <h2 class="text-2xl font-bold text-gray-800 mb-2">Giriş Yap</h2>
                 <p class="text-gray-600">Hesabınıza erişin</p>
             </div>
 
             <?php if ($error): ?>
-                <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
+                <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6 rounded-r-lg">
                     <div class="flex">
-                        <i class="fas fa-exclamation-triangle text-red-400 mr-3"></i>
+                        <i class="fas fa-exclamation-triangle text-red-400 mr-3 mt-0.5"></i>
                         <p class="text-red-700"><?= htmlspecialchars($error) ?></p>
                     </div>
                 </div>
@@ -125,7 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <!-- Login Input (Email or Username) -->
                 <div>
                     <label for="login_input" class="block text-sm font-medium text-gray-700 mb-2">
-                        <i class="fas fa-user mr-2 text-purple-500"></i>Email veya Kullanıcı Adı
+                        <i class="fas fa-user mr-2 text-primary"></i>Email veya Kullanıcı Adı
                     </label>
                     <input 
                         type="text" 
@@ -134,14 +134,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         value="<?= htmlspecialchars($login_input) ?>"
                         placeholder="email@ornek.com veya kullaniciadi" 
                         required
-                        class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
+                        class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition duration-200"
                     >
                 </div>
 
                 <!-- Password -->
                 <div>
                     <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
-                        <i class="fas fa-lock mr-2 text-purple-500"></i>Şifre
+                        <i class="fas fa-lock mr-2 text-primary"></i>Şifre
                     </label>
                     <div class="relative">
                         <input 
@@ -150,9 +150,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             name="password" 
                             placeholder="••••••••" 
                             required
-                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition duration-200"
                         >
-                        <button type="button" class="absolute right-3 top-3 text-gray-400 hover:text-gray-600" onclick="togglePassword()">
+                        <button type="button" class="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600" onclick="togglePassword()">
                             <i class="fas fa-eye" id="password-eye"></i>
                         </button>
                     </div>
@@ -160,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <!-- Forgot Password Link -->
                 <div class="text-right">
-                    <a href="forgot_password.php" class="text-sm text-purple-600 hover:text-purple-800 hover:underline">
+                    <a href="forgot_password.php" class="text-sm font-medium text-gray-600 hover:text-primary hover:underline">
                         <i class="fas fa-question-circle mr-1"></i>Şifremi unuttum
                     </a>
                 </div>
@@ -168,7 +168,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <!-- Submit Button -->
                 <button 
                     type="submit" 
-                    class="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white py-3 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-purple-800 focus:ring-4 focus:ring-purple-300 transition duration-200 transform hover:scale-105"
+                    class="w-full btn-gradient text-white py-3 px-4 rounded-xl font-semibold transition duration-200 shadow-md flex items-center justify-center"
                 >
                     <i class="fas fa-sign-in-alt mr-2"></i>Giriş Yap
                 </button>
@@ -178,7 +178,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="text-center mt-6 pt-6 border-t border-gray-200">
                 <p class="text-gray-600">
                     Hesabınız yok mu? 
-                    <a href="kayit.php" class="text-purple-600 hover:text-purple-800 font-medium">
+                    <a href="kayit.php" class="text-primary hover:underline font-semibold">
                         Kayıt olun
                     </a>
                 </p>
@@ -187,7 +187,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!-- Footer -->
         <div class="text-center mt-6">
-            <a href="index.php" class="text-purple-100 hover:text-white">
+            <a href="index.php" class="text-gray-600 hover:text-gray-800 font-medium">
                 <i class="fas fa-home mr-2"></i>Ana Sayfaya Dön
             </a>
         </div>

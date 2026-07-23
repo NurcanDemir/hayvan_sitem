@@ -1,28 +1,14 @@
-<?php
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
+$page_title = "Sahiplendirme Rehberi - Sıcak Patizi";
 include("includes/db.php");
+include("includes/header.php");
 ?>
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <title>Sahiplendirme Rehberi - Yuvanın Anahtarı</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link href="./dist/output.css" rel="stylesheet">
-</head>
-<body class="bg-gray-50 font-sans min-h-screen flex flex-col">
-
-<?php include("includes/header.php"); ?>
 
 <div class="container mx-auto px-4 py-8 mt-8">
     <div class="max-w-4xl mx-auto">
         <!-- Başlık -->
         <div class="text-center mb-8">
-            <h1 class="text-4xl font-extrabold text-pink-400 mb-4">
-                <i class="fas fa-book-open mr-3"></i>Sahiplendirme Rehberi
+            <h1 class="text-4xl font-bold text-gray-800 mb-3 flex items-center justify-center">
+                <i class="fas fa-book-open text-primary mr-3"></i>Sahiplendirme Rehberi
             </h1>
             <p class="text-xl text-gray-600">Hayvan sahiplendirme sürecinde bilmeniz gereken her şey</p>
         </div>
@@ -123,7 +109,7 @@ include("includes/db.php");
 
         <!-- Geri Dönüş Butonu -->
         <div class="text-center">
-            <a href="index.php" class="inline-flex items-center bg-pink-400 hover:bg-pink-500 text-white font-semibold py-3 px-6 rounded-lg transition duration-300 shadow-md">
+            <a href="index.php" class="btn-gradient text-white font-semibold py-3 px-6 rounded-lg transition duration-300 shadow-md inline-flex items-center">
                 <i class="fas fa-arrow-left mr-2"></i>
                 Anasayfaya Dön
             </a>
@@ -132,6 +118,3 @@ include("includes/db.php");
 </div>
 
 <?php include("includes/footer.php"); ?>
-
-</body>
-</html>

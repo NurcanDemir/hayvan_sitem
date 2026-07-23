@@ -190,26 +190,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['guncelle'])) {
     }
 }
 ?>
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>İlan Düzenle</title>
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    
-    <link href="./dist/output.css" rel="stylesheet">
-    
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-</head>
-<body class="bg-gray-50 font-sans min-h-screen flex flex-col">
+$page_title = "İlan Düzenle - Sıcak Patizi";
+include("includes/header.php");
+?>
 
-<?php include("includes/header.php"); ?>
-
-<div class="container mx-auto p-4 flex-grow pt-20">
-    <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-xl mt-8">
-        <h1 class="text-3xl font-bold text-center mb-8">İlan Düzenle</h1>
+<main class="max-w-4xl mx-auto px-4 sm:px-6 py-8 flex-grow">
+    <div class="bg-white p-8 rounded-xl shadow-lg card-hover">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8 flex items-center justify-center">
+            <i class="fas fa-edit text-primary mr-3"></i>İlan Düzenle
+        </h1>
 
         <?php if (!empty($mesaj)): ?>
             <div class="p-4 mb-4 rounded-md text-center <?= $mesaj_tur == 'success' ? 'bg-green-100 text-green-700' : ($mesaj_tur == 'danger' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700') ?>">
@@ -440,7 +429,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<?php include("includes/footer.php"); ?>
+    </div>
+</main>
 
-</body>
-</html>
+<?php include("includes/footer.php"); ?>

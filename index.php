@@ -4,7 +4,7 @@ if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-$page_title = "Ana Sayfa - Satın Alma Yuva Ol";
+$page_title = "Ana Sayfa - Sıcak Patizi";
 include("includes/db.php");
 include("includes/header.php"); // Use the standardized header
 
@@ -265,7 +265,7 @@ $user_id = $_SESSION['kullanici_id'] ?? null;
             <div class="text-center mb-16">
                 <h1 class="text-5xl font-bold text-gray-800 mb-6">
                     <i class="fas fa-heart mr-4 text-primary"></i>
-                    Yuva Ol
+                    Sıcak Patizi
                 </h1>
                 <p class="text-xl text-gray-600 mb-8">Onlar İçin Yuva, Senin İçin Dostluk</p>
                 <div class="flex justify-center space-x-4">
@@ -883,7 +883,7 @@ $user_id = $_SESSION['kullanici_id'] ?? null;
     <div class="max-w-7xl mx-auto px-6">
         <div class="text-center">
             <div class="text-3xl mb-4">🏠</div>
-            <h3 class="text-2xl font-bold mb-4 text-primary-lighter">Yuva Ol</h3>
+            <h3 class="text-2xl font-bold mb-4 text-primary-lighter">Sıcak Patizi</h3>
             <p class="text-gray-400">Onlar İçin Yuva, Senin İçin Dostluk</p>
         </div>
     </div>

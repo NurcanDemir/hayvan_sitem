@@ -66,69 +66,56 @@ if (isset($_SESSION['kullanici_id']) && $ilan) {
     $stmt_fav->close();
 }
 
+$page_title = $ilan ? htmlspecialchars($ilan['baslik']) . ' - İlan Detayı - Sıcak Patizi' : 'İlan Detayı - Sıcak Patizi';
+include("includes/header.php");
 ?>
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $ilan ? htmlspecialchars($ilan['baslik']) . ' - İlan Detayı' : 'İlan Detayı' ?></title>
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    
-    <link href="./dist/output.css" rel="stylesheet">
-    
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
-    <style>
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            align-items: center;
-            justify-content: center;
-        }
 
-        .modal-content {
-            background-color: white;
-            margin: auto;
-            padding: 20px;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 500px;
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
-        }
+<style>
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        align-items: center;
+        justify-content: center;
+    }
 
-        .close-button {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            position: absolute;
-            right: 15px;
-            top: 10px;
-        }
+    .modal-content {
+        background-color: white;
+        margin: auto;
+        padding: 20px;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+    }
 
-        .close-button:hover,
-        .close-button:focus {
-            color: black;
-            text-decoration: none;
-        }
-    </style>
-</head>
-<body class="bg-gray-50 font-sans min-h-screen flex flex-col">
-    <?php include("includes/header.php"); ?>
+    .close-button {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        position: absolute;
+        right: 15px;
+        top: 10px;
+    }
 
-    <div class="container mx-auto p-4 flex-grow pt-20">
-        <div class="max-w-6xl mx-auto bg-white p-8 rounded-lg shadow-xl mt-8">
+    .close-button:hover,
+    .close-button:focus {
+        color: black;
+        text-decoration: none;
+    }
+</style>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
+    <div class="max-w-6xl mx-auto bg-white p-8 rounded-xl shadow-lg card-hover">
         <?php if ($mesaj): ?>
             <div class="p-4 mb-4 rounded-md text-center <?= $mesaj_tur == 'success' ? 'bg-green-100 text-green-700' : ($mesaj_tur == 'danger' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700') ?>">
                 <?= htmlspecialchars($mesaj) ?>
@@ -447,11 +434,5 @@ if (isset($_SESSION['kullanici_id']) && $ilan) {
         }
     });
     </script>
-
-        </div>
-    </div>
-
-    <?php include("includes/footer.php"); ?>
-
-</body>
-</html>
+</div>
+<?php include("includes/footer.php"); ?>
